@@ -15,6 +15,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Materials/Material.h"
 #include "GameFramework/Controller.h"
+#include "Math/UnrealMathUtility.h"
 
 #ifndef HMD_MODULE_INCLUDED
 #define HMD_MODULE_INCLUDED 0
@@ -62,6 +63,9 @@ AJumpStartersPawn::AJumpStartersPawn()
 	Vehicle4W->WheelSetups[3].WheelClass = UJumpStartersWheelRear::StaticClass();
 	Vehicle4W->WheelSetups[3].BoneName = FName("Wheel_Rear_Right");
 	Vehicle4W->WheelSetups[3].AdditionalOffset = FVector(0.f, 12.f, 0.f);
+
+	// Set up collisions
+	GetMesh()->OnComponentBeginOverlap.AddDynamic(this, &AJumpStartersPawn::OnBeginOverlap);
 
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
@@ -258,6 +262,8 @@ void AJumpStartersPawn::Tick(float Delta)
 	}
 
 	CheckEnergy(Delta);
+
+	RemainingEnergy = RemainingEnergy < 0.0f ? 0.0f : RemainingEnergy;
 }
 
 void AJumpStartersPawn::BeginPlay()
@@ -287,16 +293,13 @@ void AJumpStartersPawn::OnResetVR()
 
 void AJumpStartersPawn::OnJump()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnJump"));
-	if (!bIsJumping)
+	if (!bIsJumping && RemainingEnergy > 0.0f)
 	{
 		// Add a force and set a timer for when it ends?
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Energy"));
-			FVector CarForward = Car->GetUpVector();
-			Car->AddImpulse(CarForward * BaseJumpForce * Car->GetMass());
+			Car->AddImpulse(Car->GetUpVector() * BaseJumpForce * Car->GetMass());
 			RemainingEnergy -= 1.0f;
 		}
 		bIsJumping = true;
@@ -305,7 +308,7 @@ void AJumpStartersPawn::OnJump()
 
 void AJumpStartersPawn::OnBoost()
 {
-	bIsBoosting = !bIsBoosting;
+	if (bIsBoosting || (!bIsBoosting && RemainingEnergy > 0.0f)) bIsBoosting = !bIsBoosting;
 }
 
 void AJumpStartersPawn::UpdateHUDStrings()
@@ -313,8 +316,12 @@ void AJumpStartersPawn::UpdateHUDStrings()
 	float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
 	int32 KPH_int = FMath::FloorToInt(KPH);
 
+	float RoundedEnergy = FMath::FloorToFloat(RemainingEnergy * 10.0f) / 10.0f;
+
 	// Using FText because this is display text that should be localizable
 	SpeedDisplayString = FText::Format(LOCTEXT("SpeedFormat", "{0} km/h"), FText::AsNumber(KPH_int));
+
+	EnergyDisplayString = FText::Format(LOCTEXT("EnergyFormat", "{0.0} energy"), FText::AsNumber(RoundedEnergy));
 	
 	if (bInReverseGear == true)
 	{
@@ -345,6 +352,11 @@ void AJumpStartersPawn::SetupInCarHUD()
 			InCarGear->SetTextRenderColor(GearDisplayReverseColor);
 		}
 	}
+}
+
+void AJumpStartersPawn::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Energy"));
 }
 
 #undef LOCTEXT_NAMESPACE

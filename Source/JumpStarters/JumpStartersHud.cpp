@@ -46,7 +46,7 @@ void AJumpStartersHud::DrawHUD()
 			FVector2D ScaleVec(HUDYRatio * 1.4f, HUDYRatio * 1.4f);
 
 			// Speed
-			FCanvasTextItem SpeedTextItem(FVector2D(HUDXRatio * 805.f, HUDYRatio * 455), Vehicle->SpeedDisplayString, HUDFont, FLinearColor::White);
+			FCanvasTextItem SpeedTextItem(FVector2D(HUDXRatio * 805.f, HUDYRatio * 455.f), Vehicle->SpeedDisplayString, HUDFont, FLinearColor::White);
 			SpeedTextItem.Scale = ScaleVec;
 			Canvas->DrawItem(SpeedTextItem);
 
@@ -54,6 +54,11 @@ void AJumpStartersHud::DrawHUD()
 			FCanvasTextItem GearTextItem(FVector2D(HUDXRatio * 805.f, HUDYRatio * 500.f), Vehicle->GearDisplayString, HUDFont, Vehicle->bInReverseGear == false ? Vehicle->GearDisplayColor : Vehicle->GearDisplayReverseColor);
 			GearTextItem.Scale = ScaleVec;
 			Canvas->DrawItem(GearTextItem);
+
+			// Energy
+			FCanvasTextItem EnergyTextItem(FVector2D(HUDXRatio * 805.f, HUDYRatio * 545.f), Vehicle->EnergyDisplayString, HUDFont, FLinearColor::White);
+			EnergyTextItem.Scale = ScaleVec;
+			Canvas->DrawItem(EnergyTextItem);
 		}
 	}
 }
