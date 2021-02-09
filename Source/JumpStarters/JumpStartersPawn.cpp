@@ -210,9 +210,10 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 			USkeletalMeshComponent* Car = GetMesh(); //Cast<UStaticMeshComponent>(this->GetRootComponent());
 			if (Car)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Energy"));
+				//UE_LOG(LogTemp, Warning, TEXT("Energy"));
 				FVector CarForward = Car->GetForwardVector();
 				Car->AddForce(CarForward * BaseBoostForce * Car->GetMass());
+				RemainingEnergy -= Delta;
 			}
 		}
 	}
@@ -286,14 +287,18 @@ void AJumpStartersPawn::OnResetVR()
 
 void AJumpStartersPawn::OnJump()
 {
+	UE_LOG(LogTemp, Warning, TEXT("OnJump"));
 	if (!bIsJumping)
 	{
-		/*UStaticMeshComponent* Car = Cast<UStaticMeshComponent>(this->GetRootComponent());
+		// Add a force and set a timer for when it ends?
+		USkeletalMeshComponent* Car = GetMesh();
 		if (Car)
 		{
-			FVector CarForward = Car->GetForwardVector();
-		}*/
-
+			//UE_LOG(LogTemp, Warning, TEXT("Energy"));
+			FVector CarForward = Car->GetUpVector();
+			Car->AddImpulse(CarForward * BaseJumpForce * Car->GetMass());
+			RemainingEnergy -= 1.0f;
+		}
 		bIsJumping = true;
 	}
 }
