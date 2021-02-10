@@ -156,6 +156,8 @@ private:
 
 	float RemainingEnergy;
 
+	float JumpTimer;
+
 
 public:
 	/** Returns SpringArm subobject **/

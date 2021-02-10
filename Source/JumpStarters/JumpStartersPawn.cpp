@@ -274,6 +274,23 @@ void AJumpStartersPawn::Tick(float Delta)
 
 		// Set rotation to the interpolated ideal
 		SetActorRotation(Interped, ETeleportType::TeleportPhysics);
+
+		int32 WheelsInAir = 0;
+
+		// Check if each wheel is in the air
+		UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
+		for (int i = 0; i < Vehicle4W->Wheels.Num(); i++)
+		{
+			if (Vehicle4W->Wheels[i]->IsInAir()) WheelsInAir++;
+		}
+
+		// Reset is jumping if back on ground
+		if (JumpTimer > 1.0f && WheelsInAir <= 2)
+		{
+			JumpTimer = 0.0f;
+			bIsJumping = false;
+		}
+		else JumpTimer = JumpTimer + Delta;
 	}
 }
 
@@ -288,6 +305,8 @@ void AJumpStartersPawn::BeginPlay()
 	EnableIncarView(bEnableInCar,true);
 
 	RemainingEnergy = TotalEnergy;
+
+	JumpTimer = 0.0f;
 }
 
 void AJumpStartersPawn::OnResetVR()
