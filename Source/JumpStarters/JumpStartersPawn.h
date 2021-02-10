@@ -90,6 +90,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float TotalEnergy;
 
+	UPROPERTY(EditAnywhere)
+	float RotCorrectSpeed;
+
 	/** Initial offset of incar camera */
 	FVector InternalCameraOrigin;
 	// Begin Pawn interface

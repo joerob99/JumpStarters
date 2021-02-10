@@ -264,6 +264,17 @@ void AJumpStartersPawn::Tick(float Delta)
 	CheckEnergy(Delta);
 
 	RemainingEnergy = RemainingEnergy < 0.0f ? 0.0f : RemainingEnergy;
+
+	if (bIsJumping)
+	{
+		FRotator InterpTo = GetActorRotation();
+		InterpTo.Pitch = 0.0f;
+		InterpTo.Roll = 0.0f;
+		FRotator Interped = FMath::RInterpTo(GetActorRotation(), InterpTo, Delta, RotCorrectSpeed);
+
+		// Set rotation to the interpolated ideal
+		SetActorRotation(Interped, ETeleportType::TeleportPhysics);
+	}
 }
 
 void AJumpStartersPawn::BeginPlay()
@@ -317,11 +328,12 @@ void AJumpStartersPawn::UpdateHUDStrings()
 	int32 KPH_int = FMath::FloorToInt(KPH);
 
 	float RoundedEnergy = FMath::FloorToFloat(RemainingEnergy * 10.0f) / 10.0f;
+	RoundedEnergy = RoundedEnergy + 0.0f;
 
 	// Using FText because this is display text that should be localizable
 	SpeedDisplayString = FText::Format(LOCTEXT("SpeedFormat", "{0} km/h"), FText::AsNumber(KPH_int));
 
-	EnergyDisplayString = FText::Format(LOCTEXT("EnergyFormat", "{0.0} energy"), FText::AsNumber(RoundedEnergy));
+	EnergyDisplayString = FText::Format(LOCTEXT("EnergyFormat", "{0} energy"), FText::AsNumber(RoundedEnergy));
 	
 	if (bInReverseGear == true)
 	{
