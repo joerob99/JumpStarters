@@ -323,7 +323,7 @@ void AJumpStartersPawn::OnResetVR()
 
 void AJumpStartersPawn::OnJump()
 {
-	if (!bIsJumping && RemainingEnergy > 0.0f)
+	if (!bIsJumping && RemainingEnergy >= 1.0f)
 	{
 		// Add a force and set a timer for when it ends?
 		USkeletalMeshComponent* Car = GetMesh();

@@ -81,17 +81,20 @@ public:
 	UPROPERTY(Category = Functionality, VisibleDefaultsOnly, BlueprintReadOnly)
 	bool bIsBoosting;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BaseJumpForce;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BaseBoostForce;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TotalEnergy;
 
 	UPROPERTY(EditAnywhere)
 	float RotCorrectSpeed;
+
+	UPROPERTY(Category = Health, VisibleAnywhere, BlueprintReadWrite)
+	float RemainingEnergy;
 
 	/** Initial offset of incar camera */
 	FVector InternalCameraOrigin;
@@ -153,8 +156,6 @@ private:
 	bool bIsLowFriction;
 
 	void CheckEnergy(float Delta);
-
-	float RemainingEnergy;
 
 	float JumpTimer;
 
