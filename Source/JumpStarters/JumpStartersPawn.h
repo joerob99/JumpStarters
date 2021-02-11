@@ -135,7 +135,8 @@ public:
 	void OnJump();
 	/* Handle basic car boosting */
 	void OnBoost();
-
+	/* Handle basic car reset to track */
+	void OnReset();
 
 	static const FName LookUpBinding;
 	static const FName LookRightBinding;
@@ -158,6 +159,8 @@ private:
 	void CheckEnergy(float Delta);
 
 	float JumpTimer;
+
+	float ResetDelay;
 
 
 public:

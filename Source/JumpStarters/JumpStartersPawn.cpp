@@ -152,7 +152,7 @@ void AJumpStartersPawn::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AJumpStartersPawn::OnJump);
 	PlayerInputComponent->BindAction("Boost", IE_Pressed, this, &AJumpStartersPawn::OnBoost);
-
+	PlayerInputComponent->BindAction("Reset", IE_Pressed, this, &AJumpStartersPawn::OnReset);
 }
 
 void AJumpStartersPawn::MoveForward(float Val)
@@ -224,7 +224,6 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 	else
 	{
 		bIsBoosting = false;
-		bIsJumping = false;
 		// Prompt user they are out of energy
 	}
 }
@@ -292,6 +291,8 @@ void AJumpStartersPawn::Tick(float Delta)
 		}
 		else JumpTimer = JumpTimer + Delta;
 	}
+
+	if (ResetDelay > 0.0f) ResetDelay = ResetDelay - Delta;
 }
 
 void AJumpStartersPawn::BeginPlay()
@@ -307,6 +308,8 @@ void AJumpStartersPawn::BeginPlay()
 	RemainingEnergy = TotalEnergy;
 
 	JumpTimer = 0.0f;
+
+	ResetDelay = 0.0f;
 }
 
 void AJumpStartersPawn::OnResetVR()
@@ -321,6 +324,22 @@ void AJumpStartersPawn::OnResetVR()
 #endif // HMD_MODULE_INCLUDED
 }
 
+void AJumpStartersPawn::OnReset()
+{
+	if (ResetDelay <= 0.0f) {
+		FRotator ResetRot = GetActorRotation();
+		ResetRot.Pitch = 0.0f;
+		ResetRot.Roll = 0.0f;
+		GetMesh()->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 0.0f));
+		GetMesh()->SetPhysicsAngularVelocity(FVector(0.0f, 0.0f, 0.0f));
+		//SetActorLocationAndRotation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), Upright, false, nullptr, ETeleportType::TeleportPhysics);
+		SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
+		SetActorRotation(ResetRot, ETeleportType::TeleportPhysics);
+		//RotateVector
+		ResetDelay = 3.0f;
+	}
+}
+
 void AJumpStartersPawn::OnJump()
 {
 	if (!bIsJumping && RemainingEnergy >= 1.0f)
@@ -329,7 +348,7 @@ void AJumpStartersPawn::OnJump()
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car)
 		{
-			Car->AddImpulse(Car->GetUpVector() * BaseJumpForce * Car->GetMass());
+			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * Car->GetMass());
 			RemainingEnergy -= 1.0f;
 		}
 		bIsJumping = true;
