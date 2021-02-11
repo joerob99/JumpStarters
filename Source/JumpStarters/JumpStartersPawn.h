@@ -90,7 +90,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TotalEnergy;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float RotCorrectSpeed;
 
 	UPROPERTY(Category = Health, VisibleAnywhere, BlueprintReadWrite)
