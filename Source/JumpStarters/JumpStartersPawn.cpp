@@ -65,7 +65,7 @@ AJumpStartersPawn::AJumpStartersPawn()
 	Vehicle4W->WheelSetups[3].AdditionalOffset = FVector(0.f, 12.f, 0.f);
 
 	// Set up collisions
-	GetMesh()->OnComponentBeginOverlap.AddDynamic(this, &AJumpStartersPawn::OnBeginOverlap);
+	//GetMesh()->OnComponentBeginOverlap.AddDynamic(this, &AJumpStartersPawn::OnOverlapBegin);
 
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
@@ -293,6 +293,8 @@ void AJumpStartersPawn::Tick(float Delta)
 	}
 
 	if (ResetDelay > 0.0f) ResetDelay = ResetDelay - Delta;
+
+	LapTime = LapTime + Delta;
 }
 
 void AJumpStartersPawn::BeginPlay()
@@ -404,10 +406,26 @@ void AJumpStartersPawn::SetupInCarHUD()
 	}
 }
 
-void AJumpStartersPawn::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AJumpStartersPawn::FinishedLap()
+{
+	// Only finish the lap if all checkpoints are passed through
+	if (Checkpoints == TotalCheckpoints)
+	{
+		Checkpoints = 0;
+		Lap++;
+		LapTime = 0.0f;
+	}
+
+	if (Lap == TotalLaps)
+	{
+		// End race
+	}
+}
+
+/*void AJumpStartersPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Energy"));
-}
+}*/
 
 #undef LOCTEXT_NAMESPACE
 

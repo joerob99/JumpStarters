@@ -96,6 +96,26 @@ public:
 	UPROPERTY(Category = Health, VisibleAnywhere, BlueprintReadWrite)
 	float RemainingEnergy;
 
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	float LapTime;
+
+	UPROPERTY(EditAnywhere, Category = "RaceSystem", BlueprintReadOnly)
+	int32 TotalLaps;
+
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	int32 Lap;
+
+	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
+	int32 TotalCheckpoints;
+
+	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
+	int32 Checkpoints;
+
+	// Overlap event
+	//UFUNCTION()
+	//void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+
 	/** Initial offset of incar camera */
 	FVector InternalCameraOrigin;
 	// Begin Pawn interface
@@ -106,9 +126,6 @@ public:
 	virtual void Tick(float Delta) override;
 protected:
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 	// End Actor interface
@@ -137,6 +154,9 @@ public:
 	void OnBoost();
 	/* Handle basic car reset to track */
 	void OnReset();
+
+	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
+	void FinishedLap();
 
 	static const FName LookUpBinding;
 	static const FName LookRightBinding;
