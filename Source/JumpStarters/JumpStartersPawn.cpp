@@ -312,6 +312,9 @@ void AJumpStartersPawn::BeginPlay()
 	JumpTimer = 0.0f;
 
 	ResetDelay = 0.0f;
+
+	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
+	//MyPlayer->SetTickableWhenPaused(true);
 }
 
 void AJumpStartersPawn::OnResetVR()
@@ -361,6 +364,7 @@ void AJumpStartersPawn::OnBoost()
 {
 	if (bIsBoosting || (!bIsBoosting && RemainingEnergy > 0.0f)) bIsBoosting = !bIsBoosting;
 }
+
 
 void AJumpStartersPawn::UpdateHUDStrings()
 {
