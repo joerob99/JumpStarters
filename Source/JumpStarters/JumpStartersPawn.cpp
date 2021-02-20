@@ -273,7 +273,7 @@ void AJumpStartersPawn::Tick(float Delta)
 
 		// Set rotation to the interpolated ideal
 		SetActorRotation(Interped, ETeleportType::TeleportPhysics);
-
+		/*
 		int32 WheelsInAir = 0;
 
 		// Check if each wheel is in the air
@@ -290,11 +290,43 @@ void AJumpStartersPawn::Tick(float Delta)
 			bIsJumping = false;
 		}
 		else JumpTimer = JumpTimer + Delta;
+		*/
 	}
 
 	if (ResetDelay > 0.0f) ResetDelay = ResetDelay - Delta;
 
 	LapTime = LapTime + Delta;
+
+	InAirTimerCheck = InAirTimerCheck + Delta;
+
+	if (bStartJumpTimer) JumpTimer = JumpTimer + Delta;
+
+	if (InAirTimerCheck >= 1.0f)
+	{
+		InAirTimerCheck = 0.0f;
+		int32 WheelsInAir = 0;
+
+		// Check if each wheel is in the air
+		UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
+		for (int i = 0; i < Vehicle4W->Wheels.Num(); i++)
+		{
+			if (Vehicle4W->Wheels[i]->IsInAir()) WheelsInAir++;
+		}
+
+		if (JumpTimer > 1.0f && WheelsInAir <= 2)
+		{
+			JumpTimer = 0.0f;
+			bStartJumpTimer = false;
+			bIsJumping = false;
+			ResetRotation = new FRotator(GetActorRotation());
+			ResetLocation = new FVector(GetActorLocation());
+		}
+		else if (WheelsInAir >= 4)
+		{
+			bStartJumpTimer = true;
+			bIsJumping = true;
+		}
+	}
 }
 
 void AJumpStartersPawn::BeginPlay()
@@ -312,6 +344,13 @@ void AJumpStartersPawn::BeginPlay()
 	JumpTimer = 0.0f;
 
 	ResetDelay = 0.0f;
+
+	InAirTimerCheck = 0.0f;
+
+	bStartJumpTimer = false;
+	
+	ResetRotation = new FRotator(GetActorRotation());
+	ResetLocation = new FVector(GetActorLocation());
 
 	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
 	//MyPlayer->SetTickableWhenPaused(true);
@@ -331,15 +370,21 @@ void AJumpStartersPawn::OnResetVR()
 
 void AJumpStartersPawn::OnReset()
 {
-	if (ResetDelay <= 0.0f) {
-		FRotator ResetRot = GetActorRotation();
-		ResetRot.Pitch = 0.0f;
-		ResetRot.Roll = 0.0f;
+	if (ResetDelay <= 0.0f && ResetRotation && ResetLocation) {
+		//FRotator ResetRot = GetActorRotation();
+		//ResetRot.Pitch = 0.0f;
+		//ResetRot.Roll = 0.0f;
+		ResetRotation->Pitch = 0.0f;
+		ResetRotation->Roll = 0.0f;
+
 		GetMesh()->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 0.0f));
 		GetMesh()->SetPhysicsAngularVelocity(FVector(0.0f, 0.0f, 0.0f));
+
 		//SetActorLocationAndRotation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), Upright, false, nullptr, ETeleportType::TeleportPhysics);
-		SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
-		SetActorRotation(ResetRot, ETeleportType::TeleportPhysics);
+		//SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
+		SetActorLocation(*ResetLocation + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
+		//SetActorRotation(ResetRot, ETeleportType::TeleportPhysics);
+		SetActorRotation(*ResetRotation, ETeleportType::TeleportPhysics);
 		//RotateVector
 		ResetDelay = 3.0f;
 	}
@@ -357,6 +402,7 @@ void AJumpStartersPawn::OnJump()
 			RemainingEnergy -= 1.0f;
 		}
 		bIsJumping = true;
+		bStartJumpTimer = true;
 	}
 }
 

@@ -182,6 +182,13 @@ private:
 
 	float ResetDelay;
 
+	float InAirTimerCheck;
+
+	bool bStartJumpTimer;
+
+	FVector* ResetLocation;
+	FRotator* ResetRotation;
+
 
 public:
 	/** Returns SpringArm subobject **/
