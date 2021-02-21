@@ -313,13 +313,17 @@ void AJumpStartersPawn::Tick(float Delta)
 			if (Vehicle4W->Wheels[i]->IsInAir()) WheelsInAir++;
 		}
 
-		if (JumpTimer > 1.0f && WheelsInAir <= 2)
+		if (WheelsInAir == 0)
 		{
-			JumpTimer = 0.0f;
-			bStartJumpTimer = false;
-			bIsJumping = false;
 			ResetRotation = new FRotator(GetActorRotation());
 			ResetLocation = new FVector(GetActorLocation());
+
+			if (JumpTimer > 1.0f)
+			{
+				JumpTimer = 0.0f;
+				bStartJumpTimer = false;
+			}
+			bIsJumping = false;
 		}
 		else if (WheelsInAir >= 4)
 		{
