@@ -11,6 +11,3 @@ class AJumpStartersGameMode : public AGameModeBase
 public:
 	AJumpStartersGameMode();
 };
-
-
-

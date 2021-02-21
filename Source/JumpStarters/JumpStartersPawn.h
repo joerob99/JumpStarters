@@ -96,13 +96,13 @@ public:
 	UPROPERTY(Category = Health, VisibleAnywhere, BlueprintReadWrite)
 	float RemainingEnergy;
 
-	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
 	float LapTime;
 
-	UPROPERTY(EditAnywhere, Category = "RaceSystem", BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, Category = "RaceSystem", BlueprintReadWrite)
 	int32 TotalLaps;
 
-	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
 	int32 Lap;
 
 	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
@@ -110,6 +110,9 @@ public:
 
 	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
 	int32 Checkpoints;
+
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	float FastestLap;
 
 	// Overlap event
 	//UFUNCTION()

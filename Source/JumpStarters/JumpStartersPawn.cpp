@@ -352,6 +352,8 @@ void AJumpStartersPawn::BeginPlay()
 	ResetRotation = new FRotator(GetActorRotation());
 	ResetLocation = new FVector(GetActorLocation());
 
+	Lap = 1;
+
 	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
 	//MyPlayer->SetTickableWhenPaused(true);
 }
@@ -461,12 +463,14 @@ void AJumpStartersPawn::FinishedLap()
 	// Only finish the lap if all checkpoints are passed through
 	if (Checkpoints == TotalCheckpoints)
 	{
+		// Set fastest lap to either current lap time or min of current and fastest
+		FastestLap = Lap == 1 ? LapTime : FMath::Min(LapTime, FastestLap);
 		Checkpoints = 0;
 		Lap++;
 		LapTime = 0.0f;
 	}
 
-	if (Lap == TotalLaps)
+	if (Lap > TotalLaps)
 	{
 		// End race
 	}
