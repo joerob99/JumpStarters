@@ -156,7 +156,11 @@ public:
 	/* Handle basic car boosting */
 	void OnBoost();
 	/* Handle basic car reset to track */
+	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
 	void OnReset();
+
+	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
+	float ResetDelay;
 
 	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
 	void FinishedLap();
@@ -182,8 +186,6 @@ private:
 	void CheckEnergy(float Delta);
 
 	float JumpTimer;
-
-	float ResetDelay;
 
 	float InAirTimerCheck;
 
