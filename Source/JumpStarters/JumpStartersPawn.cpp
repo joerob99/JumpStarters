@@ -163,6 +163,11 @@ void AJumpStartersPawn::MoveForward(float Val)
 void AJumpStartersPawn::MoveRight(float Val)
 {
 	GetVehicleMovementComponent()->SetSteeringInput(Val);
+
+	if (Val != 0.0f && bIsJumping) {
+		// Allow rotation adjustment in mid-air
+		DesiredYaw += Val * 0.1 * (ThisCarType == CarType::Spring ? (ThisCarType == CarType::Jacks ? HighEnergyCost : LowEnergyCost) : MediumEnergyCost);
+	}
 }
 
 void AJumpStartersPawn::OnHandbrakePressed()
@@ -266,9 +271,10 @@ void AJumpStartersPawn::Tick(float Delta)
 
 	if (bIsJumping)
 	{
-		FRotator InterpTo = GetActorRotation();
+		FRotator InterpTo;
 		InterpTo.Pitch = 0.0f;
 		InterpTo.Roll = 0.0f;
+		InterpTo.Yaw = GetActorRotation().Yaw + DesiredYaw;
 		FRotator Interped = FMath::RInterpTo(GetActorRotation(), InterpTo, Delta, RotCorrectSpeed);
 
 		// Set rotation to the interpolated ideal
@@ -292,7 +298,14 @@ void AJumpStartersPawn::Tick(float Delta)
 		else JumpTimer = JumpTimer + Delta;
 		*/
 	}
+	else {
+		DesiredPitch = 0.0f;
+		DesiredRoll = 0.0f;
+		DesiredYaw = 0.0f;
+		bHasDoubleJumped = false;
+	}
 
+	// Delay between track resets
 	if (ResetDelay > 0.0f) ResetDelay = ResetDelay - Delta;
 
 	LapTime = LapTime + Delta;
@@ -346,17 +359,23 @@ void AJumpStartersPawn::BeginPlay()
 	RemainingEnergy = TotalEnergy;
 
 	JumpTimer = 0.0f;
-
 	ResetDelay = 0.0f;
-
 	InAirTimerCheck = 0.0f;
-
 	bStartJumpTimer = false;
+	bHasDoubleJumped = false;
+
+	LowEnergyCost = 0.3f;
+	MediumEnergyCost = 0.6f;
+	HighEnergyCost = 1.0f;
 	
 	ResetRotation = new FRotator(GetActorRotation());
 	ResetLocation = new FVector(GetActorLocation());
 
 	Lap = 1;
+
+	DesiredPitch = 0.0f;
+	DesiredRoll = 0.0f;
+	DesiredYaw = 0.0f;
 
 	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
 	//MyPlayer->SetTickableWhenPaused(true);
@@ -380,6 +399,8 @@ void AJumpStartersPawn::OnReset()
 		//FRotator ResetRot = GetActorRotation();
 		//ResetRot.Pitch = 0.0f;
 		//ResetRot.Roll = 0.0f;
+		DesiredYaw = 0.0f;
+
 		ResetRotation->Pitch = 0.0f;
 		ResetRotation->Roll = 0.0f;
 
@@ -404,11 +425,36 @@ void AJumpStartersPawn::OnJump()
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car)
 		{
-			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * Car->GetMass());
-			RemainingEnergy -= 1.0f;
+			float EnergyScalar = 0.0f, ForceScalar = 1.0f;
+
+			switch (ThisCarType) {
+			case CarType::Jacks:
+				EnergyScalar = MediumEnergyCost;
+				break;
+			case CarType::Spring:
+				EnergyScalar = LowEnergyCost;
+				break;
+			case CarType::RocketBoosters:
+				EnergyScalar = HighEnergyCost;
+				break;
+			}
+			RemainingEnergy -= EnergyScalar;
+			ForceScalar = 1.0f - EnergyScalar * 0.05;
+
+			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
 		}
 		bIsJumping = true;
 		bStartJumpTimer = true;
+	}
+
+	// Double jump for rocket booster cars
+	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == CarType::RocketBoosters && RemainingEnergy >= HighEnergyCost) {
+		USkeletalMeshComponent* Car = GetMesh();
+		if (Car) {
+			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * (1.0f - HighEnergyCost * 0.05) * Car->GetMass());
+			RemainingEnergy -= HighEnergyCost;
+		}
+		bHasDoubleJumped = true;
 	}
 }
 

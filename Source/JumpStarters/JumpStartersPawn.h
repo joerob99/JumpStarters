@@ -13,6 +13,14 @@ class UInputComponent;
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
+UENUM()
+enum CarType
+{
+	Spring			UMETA(DisplayName = "Spring"),
+	Jacks			UMETA(DisplayName = "Jacks"),
+	RocketBoosters	UMETA(DisplayName = "RocketBoosters"),
+};
+
 UCLASS(config=Game)
 class AJumpStartersPawn : public AWheeledVehicle
 {
@@ -77,6 +85,9 @@ public:
 	UPROPERTY(Category = Functionality, VisibleDefaultsOnly, BlueprintReadOnly)
 	bool bIsJumping;
 
+	UPROPERTY(Category = Functionality, VisibleDefaultsOnly, BlueprintReadOnly)
+	bool bHasDoubleJumped;
+
 	/* Are we boosting currently? */
 	UPROPERTY(Category = Functionality, VisibleDefaultsOnly, BlueprintReadOnly)
 	bool bIsBoosting;
@@ -92,6 +103,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float RotCorrectSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<CarType> ThisCarType;
 
 	UPROPERTY(Category = Health, VisibleAnywhere, BlueprintReadWrite)
 	float RemainingEnergy;
@@ -193,6 +207,14 @@ private:
 
 	FVector* ResetLocation;
 	FRotator* ResetRotation;
+
+	float DesiredPitch;
+	float DesiredRoll;
+	float DesiredYaw;
+
+	float LowEnergyCost;
+	float MediumEnergyCost;
+	float HighEnergyCost;
 
 
 public:
