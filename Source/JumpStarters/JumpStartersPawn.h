@@ -169,6 +169,13 @@ public:
 	void OnJump();
 	/* Handle basic car boosting */
 	void OnBoost();
+
+	UFUNCTION(Category = "EnergySystem", BlueprintCallable)
+	void DecreaseEnergy(float SubVal);
+
+	UFUNCTION(Category = "EnergySystem", BlueprintCallable)
+	void IncreaseEnergy(float AddVal);
+
 	/* Handle basic car reset to track */
 	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
 	void OnReset();

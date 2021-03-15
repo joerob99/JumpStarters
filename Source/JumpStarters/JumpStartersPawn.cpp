@@ -233,6 +233,16 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 	}
 }
 
+void AJumpStartersPawn::DecreaseEnergy(float SubVal)
+{
+	RemainingEnergy = RemainingEnergy - SubVal < 0.0f ? 0.0f : RemainingEnergy - SubVal;
+}
+
+void AJumpStartersPawn::IncreaseEnergy(float AddVal)
+{
+	RemainingEnergy = RemainingEnergy + AddVal > TotalEnergy ? TotalEnergy : RemainingEnergy + AddVal;
+}
+
 
 void AJumpStartersPawn::Tick(float Delta)
 {
