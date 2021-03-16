@@ -167,6 +167,19 @@ void AJumpStartersPawn::MoveRight(float Val)
 	if (Val != 0.0f && bIsJumping) {
 		// Allow rotation adjustment in mid-air
 		DesiredYaw += Val * 0.1 * (ThisCarType == CarType::Spring ? (ThisCarType == CarType::Jacks ? HighEnergyCost : LowEnergyCost) : MediumEnergyCost);
+
+		if (!bHasDoubleJumped && ThisCarType == CarType::Jacks && RemainingEnergy >= MediumEnergyCost) {
+
+			USkeletalMeshComponent* Car = GetMesh();
+			float Mult = BaseJumpForce / 2.0f;
+
+			if (Car) {
+				if (Val < 0.0f) { Mult *= -1.0f; }
+				Car->AddImpulse((Car->GetUpVector() + Car->GetRightVector()) * Mult * (1.0f - MediumEnergyCost * 0.05) * Car->GetMass());
+				RemainingEnergy -= HighEnergyCost;
+			}
+			bHasDoubleJumped = true;
+		}
 	}
 }
 
@@ -289,26 +302,9 @@ void AJumpStartersPawn::Tick(float Delta)
 
 		// Set rotation to the interpolated ideal
 		SetActorRotation(Interped, ETeleportType::TeleportPhysics);
-		/*
-		int32 WheelsInAir = 0;
-
-		// Check if each wheel is in the air
-		UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
-		for (int i = 0; i < Vehicle4W->Wheels.Num(); i++)
-		{
-			if (Vehicle4W->Wheels[i]->IsInAir()) WheelsInAir++;
-		}
-
-		// Reset is jumping if back on ground
-		if (JumpTimer > 1.0f && WheelsInAir <= 2)
-		{
-			JumpTimer = 0.0f;
-			bIsJumping = false;
-		}
-		else JumpTimer = JumpTimer + Delta;
-		*/
 	}
-	else {
+	else
+	{
 		DesiredPitch = 0.0f;
 		DesiredRoll = 0.0f;
 		DesiredYaw = 0.0f;
