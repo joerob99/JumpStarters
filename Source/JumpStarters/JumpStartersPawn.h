@@ -186,6 +186,9 @@ public:
 	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
 	void FinishedLap();
 
+	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
+	void ChangeResetTransform(FVector CheckpointLocation, FRotator CheckpointRotation);
+
 	static const FName LookUpBinding;
 	static const FName LookRightBinding;
 

@@ -320,7 +320,7 @@ void AJumpStartersPawn::Tick(float Delta)
 
 	if (bStartJumpTimer) JumpTimer = JumpTimer + Delta;
 
-	if (InAirTimerCheck >= 1.0f)
+	if (InAirTimerCheck >= 0.5f)
 	{
 		InAirTimerCheck = 0.0f;
 		int32 WheelsInAir = 0;
@@ -334,8 +334,8 @@ void AJumpStartersPawn::Tick(float Delta)
 
 		if (WheelsInAir == 0)
 		{
-			ResetRotation = new FRotator(GetActorRotation());
-			ResetLocation = new FVector(GetActorLocation());
+			//ResetRotation = new FRotator(GetActorRotation());
+			//ResetLocation = new FVector(GetActorLocation());
 
 			if (JumpTimer > 1.0f)
 			{
@@ -402,9 +402,7 @@ void AJumpStartersPawn::OnResetVR()
 void AJumpStartersPawn::OnReset()
 {
 	if (ResetDelay <= 0.0f && ResetRotation && ResetLocation) {
-		//FRotator ResetRot = GetActorRotation();
-		//ResetRot.Pitch = 0.0f;
-		//ResetRot.Roll = 0.0f;
+
 		DesiredYaw = 0.0f;
 
 		ResetRotation->Pitch = 0.0f;
@@ -413,12 +411,11 @@ void AJumpStartersPawn::OnReset()
 		GetMesh()->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 0.0f));
 		GetMesh()->SetPhysicsAngularVelocity(FVector(0.0f, 0.0f, 0.0f));
 
-		//SetActorLocationAndRotation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), Upright, false, nullptr, ETeleportType::TeleportPhysics);
-		//SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
+		// Reset the location and rotation of the car
 		SetActorLocation(*ResetLocation + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
-		//SetActorRotation(ResetRot, ETeleportType::TeleportPhysics);
 		SetActorRotation(*ResetRotation, ETeleportType::TeleportPhysics);
-		//RotateVector
+
+		// Start a timer to when the player should next be allowed to reset
 		ResetDelay = 3.0f;
 	}
 }
@@ -512,6 +509,12 @@ void AJumpStartersPawn::SetupInCarHUD()
 			InCarGear->SetTextRenderColor(GearDisplayReverseColor);
 		}
 	}
+}
+
+void AJumpStartersPawn::ChangeResetTransform(FVector CheckpointLocation, FRotator CheckpointRotation)
+{
+	*ResetLocation = CheckpointLocation;
+	*ResetRotation = CheckpointRotation;
 }
 
 void AJumpStartersPawn::FinishedLap()
