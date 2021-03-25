@@ -383,6 +383,8 @@ void AJumpStartersPawn::BeginPlay()
 	DesiredRoll = 0.0f;
 	DesiredYaw = 0.0f;
 
+	CheckpointIDs.Empty();
+
 	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
 	//MyPlayer->SetTickableWhenPaused(true);
 }
@@ -520,17 +522,19 @@ void AJumpStartersPawn::ChangeResetTransform(FVector CheckpointLocation, FRotato
 void AJumpStartersPawn::FinishedLap()
 {
 	// Only finish the lap if all checkpoints are passed through
-	if (Checkpoints == TotalCheckpoints)
+	if (Checkpoints >= TotalCheckpoints)
 	{
 		// Set fastest lap to either current lap time or min of current and fastest
 		FastestLap = Lap == 1 ? LapTime : FMath::Min(LapTime, FastestLap);
 		Checkpoints = 0;
+		CheckpointIDs.Empty();
 		Lap++;
 		LapTime = 0.0f;
 	}
 
 	if (Lap > TotalLaps)
 	{
+		
 		// End race
 	}
 }

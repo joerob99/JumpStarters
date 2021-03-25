@@ -125,6 +125,9 @@ public:
 	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
 	int32 Checkpoints;
 
+	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
+	TArray<FString> CheckpointIDs;
+
 	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
 	float FastestLap;
 
