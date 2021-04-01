@@ -153,6 +153,7 @@ void AJumpStartersPawn::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AJumpStartersPawn::OnJump);
 	PlayerInputComponent->BindAction("Boost", IE_Pressed, this, &AJumpStartersPawn::OnBoost);
 	PlayerInputComponent->BindAction("Reset", IE_Pressed, this, &AJumpStartersPawn::OnReset);
+	PlayerInputComponent->BindAction("Drift", IE_Pressed, this, &AJumpStartersPawn::OnDrift);
 }
 
 void AJumpStartersPawn::MoveForward(float Val)
@@ -181,6 +182,8 @@ void AJumpStartersPawn::MoveRight(float Val)
 			bHasDoubleJumped = true;
 		}
 	}
+
+	RightTurnAxisVal = Val;
 }
 
 void AJumpStartersPawn::OnHandbrakePressed()
@@ -235,7 +238,7 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 				//UE_LOG(LogTemp, Warning, TEXT("Energy"));
 				FVector CarForward = Car->GetForwardVector();
 				Car->AddForce(CarForward * BaseBoostForce * Car->GetMass());
-				RemainingEnergy -= Delta;
+				DecreaseEnergy(Delta);
 			}
 		}
 	}
@@ -243,6 +246,30 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 	{
 		bIsBoosting = false;
 		// Prompt user they are out of energy
+	}
+}
+
+// Check the energy remaining and decide what player should be able to do
+void AJumpStartersPawn::CheckDrift(float Delta)
+{
+	if (bIsDrifting)
+	{
+		// Add a force and set a timer for when it ends?
+		USkeletalMeshComponent* Car = GetMesh(); //Cast<UStaticMeshComponent>(this->GetRootComponent());
+		if (Car)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Energy"));
+			FVector CarForward = Car->GetForwardVector();
+			Car->AddForce(CarForward * BaseDriftForce * Car->GetMass());
+
+			FVector TurnTorque(0.0f, 0.0f, 1.0f);
+
+			if (!bDriftingRight) TurnTorque.Z = -1.0f;
+
+			Car->AddTorqueInDegrees(TurnTorque * BaseDriftTorque * Car->GetMass());
+
+			IncreaseEnergy(Delta / 2.0f);
+		}
 	}
 }
 
@@ -350,6 +377,8 @@ void AJumpStartersPawn::Tick(float Delta)
 			bIsJumping = true;
 		}
 	}
+
+	CheckDrift(Delta);
 }
 
 void AJumpStartersPawn::BeginPlay()
@@ -385,6 +414,10 @@ void AJumpStartersPawn::BeginPlay()
 
 	CheckpointIDs.Empty();
 
+	bIsDrifting = false;
+	RightTurnAxisVal = 0.0f;
+	bDriftingRight = false;
+
 	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
 	//MyPlayer->SetTickableWhenPaused(true);
 }
@@ -416,6 +449,10 @@ void AJumpStartersPawn::OnReset()
 		// Reset the location and rotation of the car
 		SetActorLocation(*ResetLocation + FVector(0.0f, 0.0f, 150.0f), false, nullptr, ETeleportType::TeleportPhysics);
 		SetActorRotation(*ResetRotation, ETeleportType::TeleportPhysics);
+
+		// Reset boosting and drifting values
+		bIsBoosting = false;
+		bIsDrifting = false;
 
 		// Start a timer to when the player should next be allowed to reset
 		ResetDelay = 3.0f;
@@ -466,6 +503,18 @@ void AJumpStartersPawn::OnJump()
 void AJumpStartersPawn::OnBoost()
 {
 	if (bIsBoosting || (!bIsBoosting && RemainingEnergy > 0.0f)) bIsBoosting = !bIsBoosting;
+}
+
+void AJumpStartersPawn::OnDrift()
+{
+	if (!bIsDrifting && RightTurnAxisVal != 0.0f)
+	{
+		if (RightTurnAxisVal > 0.0f) bDriftingRight = true;
+		else bDriftingRight = false;
+
+		bIsDrifting = true;
+	}
+	else bIsDrifting = false;
 }
 
 

@@ -99,6 +99,12 @@ public:
 	float BaseBoostForce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float BaseDriftForce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float BaseDriftTorque;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TotalEnergy;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -178,6 +184,8 @@ public:
 	void OnJump();
 	/* Handle basic car boosting */
 	void OnBoost();
+	/* Handle basic car drifting */
+	void OnDrift();
 
 	UFUNCTION(Category = "EnergySystem", BlueprintCallable)
 	void DecreaseEnergy(float SubVal);
@@ -217,6 +225,7 @@ private:
 	bool bIsLowFriction;
 
 	void CheckEnergy(float Delta);
+	void CheckDrift(float Delta);
 
 	float JumpTimer;
 
@@ -234,6 +243,10 @@ private:
 	float LowEnergyCost;
 	float MediumEnergyCost;
 	float HighEnergyCost;
+
+	bool bIsDrifting;
+	bool bDriftingRight;
+	float RightTurnAxisVal;
 
 
 public:
