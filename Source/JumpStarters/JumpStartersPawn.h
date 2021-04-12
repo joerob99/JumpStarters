@@ -269,6 +269,8 @@ private:
 	const float JumpInputTimerMax = 0.2f;
 
 	float CurrentThrottle;
+	bool bHasJumpedLeft;
+	bool bHasJumpedRight;
 
 
 public:

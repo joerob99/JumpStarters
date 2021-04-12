@@ -370,8 +370,29 @@ void AJumpStartersPawn::Tick(float Delta)
 	if (bIsJumping)
 	{
 		FRotator InterpTo;
-		InterpTo.Pitch = 0.0f;
-		InterpTo.Roll = 0.0f;
+		InterpTo.Pitch = DesiredPitch;
+
+		// If a Jacks car has jumped left or right, rotate car in air accordingly
+		if (bHasJumpedLeft)
+		{
+			if (DesiredRoll <= -360.0f)
+			{
+				DesiredRoll = 0.0f;
+				bHasJumpedLeft = false;
+			}
+			else DesiredRoll -= 360.0f * Delta;
+		}
+		else if (bHasJumpedRight)
+		{
+			if (DesiredRoll >= 360.0f)
+			{
+				DesiredRoll = 0.0f;
+				bHasJumpedRight = false;
+			}
+			else DesiredRoll += 360.0f * Delta;
+		}
+
+		InterpTo.Roll = DesiredRoll;
 		InterpTo.Yaw = GetActorRotation().Yaw + DesiredYaw;
 		FRotator Interped = FMath::RInterpTo(GetActorRotation(), InterpTo, Delta, RotCorrectSpeed);
 
@@ -469,6 +490,8 @@ void AJumpStartersPawn::BeginPlay()
 	JumpInputTimer = JumpInputTimerMax;
 
 	CurrentThrottle = 0.0f;
+	bHasJumpedLeft = false;
+	bHasJumpedRight = false;
 }
 
 void AJumpStartersPawn::OnResetVR()
@@ -542,9 +565,11 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<JumpType> Jump)
 				break;
 			case JumpType::Left:
 				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector() + (Car->GetRightVector() * -1)) * BaseJumpForce * ForceScalar * Car->GetMass());
+				bHasJumpedLeft = true;
 				break;
 			case JumpType::Right:
 				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector() + Car->GetRightVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
+				bHasJumpedRight = true;
 				break;
 			default:
 				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
@@ -578,12 +603,18 @@ void AJumpStartersPawn::OnJump()
 
 void AJumpStartersPawn::OnJumpLeft()
 {
-	if (!bIsJumpingLeft) bIsJumpingLeft = true;
+	if (!bIsJumpingLeft)
+	{
+		bIsJumpingLeft = true;
+	}
 }
 
 void AJumpStartersPawn::OnJumpRight()
 {
-	if (!bIsJumpingRight) bIsJumpingRight = true;
+	if (!bIsJumpingRight)
+	{ 
+		bIsJumpingRight = true;
+	}
 }
 
 void AJumpStartersPawn::OnBoost()
