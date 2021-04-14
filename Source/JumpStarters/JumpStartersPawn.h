@@ -21,6 +21,14 @@ enum CarType
 	RocketBoosters	UMETA(DisplayName = "RocketBoosters"),
 };
 
+UENUM()
+enum JumpType
+{
+	Up				UMETA(DisplayName = "Up"),
+	Left			UMETA(DisplayName = "Left"),
+	Right			UMETA(DisplayName = "Right"),
+};
+
 UCLASS(config=Game)
 class AJumpStartersPawn : public AWheeledVehicle
 {
@@ -187,6 +195,10 @@ public:
 	/* Handle basic car drifting */
 	void OnDrift();
 
+	/* Handles jumping using two different buttons */
+	void OnJumpLeft();
+	void OnJumpRight();
+
 	UFUNCTION(Category = "EnergySystem", BlueprintCallable)
 	void DecreaseEnergy(float SubVal);
 
@@ -226,6 +238,9 @@ private:
 
 	void CheckEnergy(float Delta);
 	void CheckDrift(float Delta);
+	void CheckJumpTimer(float Delta);
+
+	void DoJump(TEnumAsByte<JumpType> Jump);
 
 	float JumpTimer;
 
@@ -247,6 +262,15 @@ private:
 	bool bIsDrifting;
 	bool bDriftingRight;
 	float RightTurnAxisVal;
+
+	bool bIsJumpingLeft;
+	bool bIsJumpingRight;
+	float JumpInputTimer;
+	const float JumpInputTimerMax = 0.2f;
+
+	float CurrentThrottle;
+	bool bHasJumpedLeft;
+	bool bHasJumpedRight;
 
 
 public:

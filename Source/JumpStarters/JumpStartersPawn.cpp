@@ -16,6 +16,7 @@
 #include "Materials/Material.h"
 #include "GameFramework/Controller.h"
 #include "Math/UnrealMathUtility.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #ifndef HMD_MODULE_INCLUDED
 #define HMD_MODULE_INCLUDED 0
@@ -154,11 +155,15 @@ void AJumpStartersPawn::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Boost", IE_Pressed, this, &AJumpStartersPawn::OnBoost);
 	PlayerInputComponent->BindAction("Reset", IE_Pressed, this, &AJumpStartersPawn::OnReset);
 	PlayerInputComponent->BindAction("Drift", IE_Pressed, this, &AJumpStartersPawn::OnDrift);
+
+	PlayerInputComponent->BindAction("JumpLeft", IE_Pressed, this, &AJumpStartersPawn::OnJumpLeft);
+	PlayerInputComponent->BindAction("JumpRight", IE_Pressed, this, &AJumpStartersPawn::OnJumpRight);
 }
 
 void AJumpStartersPawn::MoveForward(float Val)
 {
 	GetVehicleMovementComponent()->SetThrottleInput(Val);
+	CurrentThrottle = Val;
 }
 
 void AJumpStartersPawn::MoveRight(float Val)
@@ -168,19 +173,6 @@ void AJumpStartersPawn::MoveRight(float Val)
 	if (Val != 0.0f && bIsJumping) {
 		// Allow rotation adjustment in mid-air
 		DesiredYaw += Val * 0.1 * (ThisCarType == CarType::Spring ? (ThisCarType == CarType::Jacks ? HighEnergyCost : LowEnergyCost) : MediumEnergyCost);
-
-		if (!bHasDoubleJumped && ThisCarType == CarType::Jacks && RemainingEnergy >= MediumEnergyCost) {
-
-			USkeletalMeshComponent* Car = GetMesh();
-			float Mult = BaseJumpForce / 2.0f;
-
-			if (Car) {
-				if (Val < 0.0f) { Mult *= -1.0f; }
-				Car->AddImpulse((Car->GetUpVector() + Car->GetRightVector()) * Mult * (1.0f - MediumEnergyCost * 0.05) * Car->GetMass());
-				RemainingEnergy -= HighEnergyCost;
-			}
-			bHasDoubleJumped = true;
-		}
 	}
 
 	RightTurnAxisVal = Val;
@@ -249,26 +241,82 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 	}
 }
 
-// Check the energy remaining and decide what player should be able to do
+// Check if player is currently drifting and adjust car physics accordingly
 void AJumpStartersPawn::CheckDrift(float Delta)
 {
-	if (bIsDrifting)
+	// Add a force and set a timer for when it ends?
+	USkeletalMeshComponent* Car = GetMesh(); //Cast<UStaticMeshComponent>(this->GetRootComponent());
+	if (Car)
 	{
-		// Add a force and set a timer for when it ends?
-		USkeletalMeshComponent* Car = GetMesh(); //Cast<UStaticMeshComponent>(this->GetRootComponent());
-		if (Car)
+		//UE_LOG(LogTemp, Warning, TEXT("Energy"));
+		FVector CarForward = Car->GetForwardVector();
+		//Car->AddForce(CarForward * BaseDriftForce * Car->GetMass());
+
+		FVector TurnTorque(0.0f, 0.0f, 1.0f);
+
+		if (!bDriftingRight) TurnTorque.Z = -1.0f;
+
+		FVector Velocity = Car->GetComponentVelocity();
+
+		Velocity.Normalize();
+		CarForward.Normalize();
+		float DriftAngle = FVector::DotProduct(Velocity, CarForward);
+		DriftAngle = FMath::RadiansToDegrees(acosf(DriftAngle));
+		//UE_LOG(LogTemp, Warning, TEXT("Drift Angle: %f"), DriftAngle);
+
+		//Car->AddTorqueInDegrees(TurnTorque * BaseDriftTorque * Car->GetMass());
+
+		if (!bIsJumping && DriftAngle > 10.0f && DriftAngle < 75.0f && CurrentThrottle >= 0.05f)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Energy"));
-			FVector CarForward = Car->GetForwardVector();
-			Car->AddForce(CarForward * BaseDriftForce * Car->GetMass());
+			bIsDrifting = true;
+			Car->AddForce(Velocity * Car->GetMass() * DriftAngle * 1000.0f * Delta);
+			IncreaseEnergy(Delta * (DriftAngle / 10.0f) / 20.0f);
+		}
+		else { bIsDrifting = false; }
+	}
+}
 
-			FVector TurnTorque(0.0f, 0.0f, 1.0f);
-
-			if (!bDriftingRight) TurnTorque.Z = -1.0f;
-
-			Car->AddTorqueInDegrees(TurnTorque * BaseDriftTorque * Car->GetMass());
-
-			IncreaseEnergy(Delta / 2.0f);
+void AJumpStartersPawn::CheckJumpTimer(float Delta)
+{
+	if (!bIsJumping)
+	{
+		if (bIsJumpingLeft && bIsJumpingRight)
+		{
+			bIsJumpingLeft = false;
+			bIsJumpingRight = false;
+			JumpInputTimer = JumpInputTimerMax;
+			DoJump(JumpType::Up);
+		}
+		else if ((bIsJumpingLeft || bIsJumpingRight) && JumpInputTimer > 0.0f) JumpInputTimer -= Delta;
+		else if (bIsJumpingLeft && !bIsJumpingRight && JumpInputTimer <= 0.0f && ThisCarType == CarType::Jacks)
+		{
+			DoJump(JumpType::Left);
+		}
+		else if (!bIsJumpingLeft && bIsJumpingRight && JumpInputTimer <= 0.0f && ThisCarType == CarType::Jacks)
+		{
+			DoJump(JumpType::Right);
+		}
+		else {
+			bIsJumpingLeft = false;
+			bIsJumpingRight = false;
+			JumpInputTimer = JumpInputTimerMax;
+		}
+	}
+	else if (bIsJumping)
+	{
+		if (bIsJumpingLeft && bIsJumpingRight && ThisCarType == CarType::RocketBoosters)
+		{
+			bIsJumpingLeft = false;
+			bIsJumpingRight = false;
+			JumpInputTimer = JumpInputTimerMax;
+			DoJump(JumpType::Up);
+		}
+		else if ((bIsJumpingLeft || bIsJumpingRight) && JumpInputTimer > 0.0f) JumpInputTimer -= Delta;
+		else
+		{
+			bIsJumpingLeft = false;
+			bIsJumpingRight = false;
+			JumpInputTimer = JumpInputTimerMax;
 		}
 	}
 }
@@ -322,8 +370,29 @@ void AJumpStartersPawn::Tick(float Delta)
 	if (bIsJumping)
 	{
 		FRotator InterpTo;
-		InterpTo.Pitch = 0.0f;
-		InterpTo.Roll = 0.0f;
+		InterpTo.Pitch = DesiredPitch;
+
+		// If a Jacks car has jumped left or right, rotate car in air accordingly
+		if (bHasJumpedLeft)
+		{
+			if (DesiredRoll <= -360.0f)
+			{
+				DesiredRoll = 0.0f;
+				bHasJumpedLeft = false;
+			}
+			else DesiredRoll -= 360.0f * Delta;
+		}
+		else if (bHasJumpedRight)
+		{
+			if (DesiredRoll >= 360.0f)
+			{
+				DesiredRoll = 0.0f;
+				bHasJumpedRight = false;
+			}
+			else DesiredRoll += 360.0f * Delta;
+		}
+
+		InterpTo.Roll = DesiredRoll;
 		InterpTo.Yaw = GetActorRotation().Yaw + DesiredYaw;
 		FRotator Interped = FMath::RInterpTo(GetActorRotation(), InterpTo, Delta, RotCorrectSpeed);
 
@@ -347,7 +416,7 @@ void AJumpStartersPawn::Tick(float Delta)
 
 	if (bStartJumpTimer) JumpTimer = JumpTimer + Delta;
 
-	if (InAirTimerCheck >= 0.5f)
+	if (InAirTimerCheck >= 0.2f)
 	{
 		InAirTimerCheck = 0.0f;
 		int32 WheelsInAir = 0;
@@ -361,9 +430,6 @@ void AJumpStartersPawn::Tick(float Delta)
 
 		if (WheelsInAir == 0)
 		{
-			//ResetRotation = new FRotator(GetActorRotation());
-			//ResetLocation = new FVector(GetActorLocation());
-
 			if (JumpTimer > 1.0f)
 			{
 				JumpTimer = 0.0f;
@@ -378,6 +444,7 @@ void AJumpStartersPawn::Tick(float Delta)
 		}
 	}
 
+	CheckJumpTimer(Delta);
 	CheckDrift(Delta);
 }
 
@@ -418,8 +485,13 @@ void AJumpStartersPawn::BeginPlay()
 	RightTurnAxisVal = 0.0f;
 	bDriftingRight = false;
 
-	//APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
-	//MyPlayer->SetTickableWhenPaused(true);
+	bIsJumpingLeft = false;
+	bIsJumpingRight = false;
+	JumpInputTimer = JumpInputTimerMax;
+
+	CurrentThrottle = 0.0f;
+	bHasJumpedLeft = false;
+	bHasJumpedRight = false;
 }
 
 void AJumpStartersPawn::OnResetVR()
@@ -453,50 +525,95 @@ void AJumpStartersPawn::OnReset()
 		// Reset boosting and drifting values
 		bIsBoosting = false;
 		bIsDrifting = false;
+		bIsJumpingLeft = false;
+		bIsJumpingRight = false;
 
 		// Start a timer to when the player should next be allowed to reset
 		ResetDelay = 3.0f;
 	}
 }
 
-void AJumpStartersPawn::OnJump()
+void AJumpStartersPawn::DoJump(TEnumAsByte<JumpType> Jump)
 {
-	if (!bIsJumping && RemainingEnergy >= 1.0f)
+	float EnergyScalar = 0.0f, ForceScalar = 1.0f;
+
+	switch (ThisCarType) {
+	case CarType::Jacks:
+		EnergyScalar = MediumEnergyCost;
+		break;
+	case CarType::Spring:
+		EnergyScalar = LowEnergyCost;
+		break;
+	case CarType::RocketBoosters:
+		EnergyScalar = HighEnergyCost;
+		break;
+	}
+
+	if (!bIsJumping && RemainingEnergy >= EnergyScalar)
 	{
 		// Add a force and set a timer for when it ends?
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car)
 		{
-			float EnergyScalar = 0.0f, ForceScalar = 1.0f;
-
-			switch (ThisCarType) {
-			case CarType::Jacks:
-				EnergyScalar = MediumEnergyCost;
-				break;
-			case CarType::Spring:
-				EnergyScalar = LowEnergyCost;
-				break;
-			case CarType::RocketBoosters:
-				EnergyScalar = HighEnergyCost;
-				break;
-			}
 			RemainingEnergy -= EnergyScalar;
 			ForceScalar = 1.0f - EnergyScalar * 0.05;
 
-			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
+			switch (Jump)
+			{
+			case JumpType::Up:
+				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
+				break;
+			case JumpType::Left:
+				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector() + (Car->GetRightVector() * -1)) * BaseJumpForce * ForceScalar * Car->GetMass());
+				bHasJumpedLeft = true;
+				break;
+			case JumpType::Right:
+				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector() + Car->GetRightVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
+				bHasJumpedRight = true;
+				break;
+			default:
+				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
+				break;
+			}
+
+			bIsJumping = true;
+			bStartJumpTimer = true;
 		}
-		bIsJumping = true;
-		bStartJumpTimer = true;
 	}
 
 	// Double jump for rocket booster cars
-	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == CarType::RocketBoosters && RemainingEnergy >= HighEnergyCost) {
+	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == CarType::RocketBoosters && RemainingEnergy >= HighEnergyCost && Jump == JumpType::Up) {
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car) {
 			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * (1.0f - HighEnergyCost * 0.05) * Car->GetMass());
 			RemainingEnergy -= HighEnergyCost;
 		}
 		bHasDoubleJumped = true;
+	}
+
+	bIsJumpingLeft = false;
+	bIsJumpingRight = false;
+	JumpInputTimer = JumpInputTimerMax;
+}
+
+void AJumpStartersPawn::OnJump()
+{
+	DoJump(JumpType::Up);
+}
+
+void AJumpStartersPawn::OnJumpLeft()
+{
+	if (!bIsJumpingLeft)
+	{
+		bIsJumpingLeft = true;
+	}
+}
+
+void AJumpStartersPawn::OnJumpRight()
+{
+	if (!bIsJumpingRight)
+	{ 
+		bIsJumpingRight = true;
 	}
 }
 
