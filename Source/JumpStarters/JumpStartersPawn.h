@@ -59,8 +59,8 @@ class AJumpStartersPawn : public AWheeledVehicle
 	UTextRenderComponent* InCarGear;
 
 	//sound-related
-	UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class USoundCue* JumpCue;
+	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//class USoundCue* JumpCue;
 	
 public:
 	AJumpStartersPawn();

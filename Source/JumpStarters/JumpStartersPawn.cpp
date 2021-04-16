@@ -133,13 +133,13 @@ AJumpStartersPawn::AJumpStartersPawn()
 	bIsBoosting = false;
 
 	//sound-related code
-	static ConstructorHelpers::FObjectFinder<USoundCue> JumpCueObject(TEXT("SoundCue'/Game/Sounds/CarSFX/jumping/springSC.springSC'"));
+	/*static ConstructorHelpers::FObjectFinder<USoundCue> JumpCueObject(TEXT("SoundCue'/Game/Sounds/CarSFX/jumping/springSC.springSC'"));
 	static ConstructorHelpers::FObjectFinder<USoundCue> RBCueObject(TEXT("SoundCue'/Game/Sounds/CarSFX/jumping/rocketSC.rocketSC'"));
 	if (RBCueObject.Succeeded() && ThisCarType == CarType::RocketBoosters)
 		JumpCue = RBCueObject.Object;
-	else {
+	else if (JumpCueObject.Succeeded()) {
 		JumpCue = JumpCueObject.Object;
-	}
+	}*/
 }
 
 void AJumpStartersPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
