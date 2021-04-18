@@ -9,9 +9,9 @@ UJumpStartersWheelFront::UJumpStartersWheelFront()
 	ShapeRadius = 35.f;
 	ShapeWidth = 10.0f;
 	bAffectedByHandbrake = false;
-	SteerAngle = 60.f;
-	LatStiffValue = 900.0f;
-	LongStiffValue = 1500.0f;
+	SteerAngle = 65.f;
+	LatStiffValue = 2500.0f;
+	LongStiffValue = 2500.0f;
 }
 
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
