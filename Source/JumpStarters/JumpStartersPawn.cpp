@@ -278,7 +278,7 @@ void AJumpStartersPawn::CheckDrift(float Delta)
 		if (!bIsJumping && DriftAngle > 10.0f && DriftAngle < 75.0f && CurrentThrottle >= 0.05f)
 		{
 			bIsDrifting = true;
-			Car->AddForce(Velocity * Car->GetMass() * DriftAngle * 1000.0f * Delta);
+			Car->AddForce((Velocity + CarForward) * Car->GetMass() * DriftAngle * BaseDriftForce * Delta);
 			IncreaseEnergy(Delta * (DriftAngle / 10.0f) / 20.0f);
 		}
 		else { bIsDrifting = false; }
