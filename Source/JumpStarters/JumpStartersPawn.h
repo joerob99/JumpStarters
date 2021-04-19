@@ -195,6 +195,8 @@ public:
 	void OnJump();
 	/* Handle basic car boosting */
 	void OnBoost();
+	/* Handle stopping car boosting */
+	void OnBoostStop();
 	/* Handle basic car drifting */
 	void OnDrift();
 

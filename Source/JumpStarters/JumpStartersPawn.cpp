@@ -162,6 +162,7 @@ void AJumpStartersPawn::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AJumpStartersPawn::OnJump);
 	PlayerInputComponent->BindAction("Boost", IE_Pressed, this, &AJumpStartersPawn::OnBoost);
+	PlayerInputComponent->BindAction("Boost", IE_Released, this, &AJumpStartersPawn::OnBoostStop);
 	PlayerInputComponent->BindAction("Reset", IE_Pressed, this, &AJumpStartersPawn::OnReset);
 	PlayerInputComponent->BindAction("Drift", IE_Pressed, this, &AJumpStartersPawn::OnDrift);
 
@@ -628,7 +629,12 @@ void AJumpStartersPawn::OnJumpRight()
 
 void AJumpStartersPawn::OnBoost()
 {
-	if (bIsBoosting || (!bIsBoosting && RemainingEnergy > 0.0f)) bIsBoosting = !bIsBoosting;
+	if (!bIsBoosting && RemainingEnergy > 0.0f) bIsBoosting = true;
+}
+
+void AJumpStartersPawn::OnBoostStop()
+{
+	if (bIsBoosting) bIsBoosting = false;
 }
 
 void AJumpStartersPawn::OnDrift()
