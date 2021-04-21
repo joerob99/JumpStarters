@@ -33,7 +33,7 @@
 		},
 		{
 			"Name": "VehicleAIPlugin",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/3e91417b48bb4b5f9d2c3eb0823f1233"
 		}
 	]
