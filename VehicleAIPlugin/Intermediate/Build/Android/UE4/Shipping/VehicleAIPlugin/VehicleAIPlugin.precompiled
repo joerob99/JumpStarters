@@ -1,0 +1,8 @@
+{
+	"OutputFiles": [
+		"Module.VehicleAIPlugin.cppa7.o",
+		"Module.VehicleAIPlugin.cppa8.o",
+		"Module.VehicleAIPlugin.gen.cppa7.o",
+		"Module.VehicleAIPlugin.gen.cppa8.o"
+	]
+}

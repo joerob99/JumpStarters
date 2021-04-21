@@ -1,0 +1,35 @@
+{
+	"FileVersion": 3,
+	"Version": 2,
+	"VersionName": "1.4",
+	"FriendlyName": "Vehicle AI Plugin",
+	"Description": "Adds AI functionality to PhysX wheeled vehicles.",
+	"Category": "AI",
+	"CreatedBy": "313 Studios",
+	"CreatedByURL": "https://313-studios.com/",
+	"DocsURL": "https://313-studios.com/wp-content/uploads/2019/12/VehicleAIPluginDocumentationV2.pdf",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/3e91417b48bb4b5f9d2c3eb0823f1233",
+	"SupportURL": "support@313-studios.com",
+	"EngineVersion": "4.26.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "VehicleAIPlugin",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win32",
+				"Win64",
+				"Linux",
+				"Android"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "PhysXVehicles",
+			"Enabled": true
+		}
+	]
+}
