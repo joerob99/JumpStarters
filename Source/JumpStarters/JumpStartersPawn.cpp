@@ -17,6 +17,7 @@
 #include "GameFramework/Controller.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Curves/RichCurve.h"
 
 #ifndef HMD_MODULE_INCLUDED
 #define HMD_MODULE_INCLUDED 0
@@ -38,11 +39,25 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 AJumpStartersPawn::AJumpStartersPawn()
 {
 	// Car mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Sedan/Sedan_SkelMesh.Sedan_SkelMesh"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Models/Car1_FinalExport.Car1_FinalExport"));
 	GetMesh()->SetSkeletalMesh(CarMesh.Object);
 
-	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Sedan/Sedan_AnimBP"));
+	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/Car1_Anim"));
 	GetMesh()->SetAnimInstanceClass(AnimBPClass.Class);
+
+	// Setup exhaust component and vehicle collider for external events
+	static ConstructorHelpers::FClassFinder<AActor> ExhaustBPClass(TEXT("/Game/Sounds/CarSFX/Default/DefaultExhaustEmitter"));
+	ExhaustEmitter = CreateDefaultSubobject<UChildActorComponent>(TEXT("ExhaustEmitter0"));
+	ExhaustEmitter->SetChildActorClass(ExhaustBPClass.Class);
+	ExhaustEmitter->SetRelativeLocation(FVector(-233.0f, 0.0f, 60.0f));
+	ExhaustEmitter->SetupAttachment(GetMesh());
+	
+	static ConstructorHelpers::FClassFinder<AActor> ColliderBPClass(TEXT("/Game/RaceSystem/VehicleCollider"));
+	VehicleCollider = CreateDefaultSubobject<UChildActorComponent>(TEXT("VehicleCollider0"));
+	VehicleCollider->SetChildActorClass(ColliderBPClass.Class);
+	VehicleCollider->SetRelativeScale3D(FVector(6.23f, 2.75f, 2.0f));
+	VehicleCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 77.0f));
+	VehicleCollider->SetupAttachment(GetMesh());
 	
 	// Simulation
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
@@ -50,20 +65,69 @@ AJumpStartersPawn::AJumpStartersPawn()
 	check(Vehicle4W->WheelSetups.Num() == 4);
 
 	Vehicle4W->WheelSetups[0].WheelClass = UJumpStartersWheelFront::StaticClass();
-	Vehicle4W->WheelSetups[0].BoneName = FName("Wheel_Front_Left");
-	Vehicle4W->WheelSetups[0].AdditionalOffset = FVector(0.f, -12.f, 0.f);
+	Vehicle4W->WheelSetups[0].BoneName = FName("FrontLeft_Wheel");
+	Vehicle4W->WheelSetups[0].AdditionalOffset = FVector(153.f, -100.f, 33.f);
 
 	Vehicle4W->WheelSetups[1].WheelClass = UJumpStartersWheelFront::StaticClass();
-	Vehicle4W->WheelSetups[1].BoneName = FName("Wheel_Front_Right");
-	Vehicle4W->WheelSetups[1].AdditionalOffset = FVector(0.f, 12.f, 0.f);
+	Vehicle4W->WheelSetups[1].BoneName = FName("FrontRight_Wheel");
+	Vehicle4W->WheelSetups[1].AdditionalOffset = FVector(153.f, 100.f, 33.f);
 
 	Vehicle4W->WheelSetups[2].WheelClass = UJumpStartersWheelRear::StaticClass();
-	Vehicle4W->WheelSetups[2].BoneName = FName("Wheel_Rear_Left");
-	Vehicle4W->WheelSetups[2].AdditionalOffset = FVector(0.f, -12.f, 0.f);
+	Vehicle4W->WheelSetups[2].BoneName = FName("RearLeft_Wheel");
+	Vehicle4W->WheelSetups[2].AdditionalOffset = FVector(-153.f, -100.f, 33.f);
 
 	Vehicle4W->WheelSetups[3].WheelClass = UJumpStartersWheelRear::StaticClass();
-	Vehicle4W->WheelSetups[3].BoneName = FName("Wheel_Rear_Right");
-	Vehicle4W->WheelSetups[3].AdditionalOffset = FVector(0.f, 12.f, 0.f);
+	Vehicle4W->WheelSetups[3].BoneName = FName("RearRight_Wheel");
+	Vehicle4W->WheelSetups[3].AdditionalOffset = FVector(-153.f, 100.f, 33.f);
+
+	// Setup engine, differential, transmission, gears, and nav agent props with specific values
+	FVehicleEngineData JumpStartersEngine;
+	FVehicleDifferential4WData JumpStartersDifferential;
+	FVehicleTransmissionData JumpStartersTransmission;
+	TArray<FVehicleGearData> JumpStartersGears;
+	FNavAgentProperties JumpStartersNavAgent;
+
+	JumpStartersEngine.MaxRPM = 5500.0f;
+	JumpStartersEngine.MOI = 1.0f;
+	JumpStartersEngine.DampingRateFullThrottle = 0.15f;
+	JumpStartersEngine.DampingRateZeroThrottleClutchEngaged = 2.0f;
+	JumpStartersEngine.DampingRateZeroThrottleClutchDisengaged = 0.35f;
+	JumpStartersEngine.TorqueCurve.GetRichCurve()->Reset();
+	JumpStartersEngine.TorqueCurve.GetRichCurve()->AddKey(0.0f, 2000.0f);
+	JumpStartersEngine.TorqueCurve.GetRichCurve()->AddKey(2500.0f, 3000.0f);
+	JumpStartersEngine.TorqueCurve.GetRichCurve()->AddKey(5500.0f, 2500.0f);
+
+	JumpStartersDifferential.DifferentialType = EVehicleDifferential4W::LimitedSlip_4W;
+	JumpStartersDifferential.FrontRearSplit = 0.6f;
+	JumpStartersDifferential.FrontLeftRightSplit = 0.5f;
+	JumpStartersDifferential.RearLeftRightSplit = 0.5f;
+	JumpStartersDifferential.CentreBias = 1.3f;
+	JumpStartersDifferential.FrontBias = 1.3f;
+	JumpStartersDifferential.RearBias = 1.3f;
+
+	FVehicleGearData JumpStartersGear;
+	JumpStartersGear.Ratio = 0.42;
+	JumpStartersGear.DownRatio = 0.2;
+	JumpStartersGear.UpRatio = 0.8;
+	JumpStartersGears.Reset();
+	JumpStartersGears.Add(JumpStartersGear);
+
+	JumpStartersTransmission.bUseGearAutoBox = true;
+	JumpStartersTransmission.GearSwitchTime = 0.1f;
+	JumpStartersTransmission.GearAutoBoxLatency = 1.0;
+	JumpStartersTransmission.FinalRatio = 4.0;
+	JumpStartersTransmission.ReverseGearRatio = -4.0f;
+	JumpStartersTransmission.NeutralGearUpRatio = 0.15f;
+	JumpStartersTransmission.ClutchStrength = 10.0f;
+	JumpStartersTransmission.ForwardGears = JumpStartersGears;
+
+	JumpStartersNavAgent.AgentRadius = 280.0f;
+	JumpStartersNavAgent.AgentHeight = 125.0f;
+
+	Vehicle4W->EngineSetup = JumpStartersEngine;
+	Vehicle4W->DifferentialSetup = JumpStartersDifferential;
+	Vehicle4W->TransmissionSetup = JumpStartersTransmission;
+	Vehicle4W->NavAgentProps = JumpStartersNavAgent;
 
 	// Set up collisions
 	//GetMesh()->OnComponentBeginOverlap.AddDynamic(this, &AJumpStartersPawn::OnOverlapBegin);
@@ -71,9 +135,9 @@ AJumpStartersPawn::AJumpStartersPawn()
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
 	SpringArm->TargetOffset = FVector(0.f, 0.f, 200.f);
-	SpringArm->SetRelativeRotation(FRotator(-15.f, 0.f, 0.f));
+	SpringArm->SetRelativeRotation(FRotator(-12.5f, 0.f, 0.f));
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 600.0f;
+	SpringArm->TargetArmLength = 575.0f;
 	SpringArm->bEnableCameraRotationLag = true;
 	SpringArm->CameraRotationLagSpeed = 7.f;
 	SpringArm->bInheritPitch = false;
@@ -679,6 +743,9 @@ void AJumpStartersPawn::SetupInCarHUD()
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if ((PlayerController != nullptr) && (InCarSpeed != nullptr) && (InCarGear != nullptr) )
 	{
+		InCarGear = nullptr;
+		InCarSpeed = nullptr;
+		/*
 		// Setup the text render component strings
 		InCarSpeed->SetText(SpeedDisplayString);
 		InCarGear->SetText(GearDisplayString);
@@ -691,6 +758,7 @@ void AJumpStartersPawn::SetupInCarHUD()
 		{
 			InCarGear->SetTextRenderColor(GearDisplayReverseColor);
 		}
+		*/
 	}
 }
 

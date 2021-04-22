@@ -13,7 +13,7 @@ class UInputComponent;
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
-UENUM()
+UENUM(BlueprintType)
 enum CarType
 {
 	Spring			UMETA(DisplayName = "Spring"),
@@ -57,6 +57,14 @@ class AJumpStartersPawn : public AWheeledVehicle
 	/** Text component for the In-Car gear */
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTextRenderComponent* InCarGear;
+
+	/** Actor component for the exhaust emitter */
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UChildActorComponent* ExhaustEmitter;
+
+	/** Actor component for the vehicle collider */
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UChildActorComponent* VehicleCollider;
 
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -103,22 +111,22 @@ public:
 	UPROPERTY(Category = Functionality, VisibleDefaultsOnly, BlueprintReadOnly)
 	bool bIsBoosting;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BaseJumpForce;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BaseBoostForce;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BaseDriftForce;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BaseDriftTorque;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TotalEnergy;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float RotCorrectSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
