@@ -297,6 +297,23 @@ void AJumpStartersPawn::EnableIncarView(const bool bState, const bool bForce)
 	}
 }
 
+//
+void AJumpStartersPawn::ChangeCameraFOV(float DeltaFOV)
+{
+	if (DeltaFOV > 0.0f && CurrBoostFOV < MaxBoostFOV)
+	{
+		CurrBoostFOV += DeltaFOV;
+		if (CurrBoostFOV > MaxBoostFOV) CurrBoostFOV = MaxBoostFOV;
+		Camera->FieldOfView = CurrBoostFOV;
+	}
+	else if (DeltaFOV < 0.0f && CurrBoostFOV > MinBoostFOV)
+	{
+		CurrBoostFOV += DeltaFOV;
+		if (CurrBoostFOV < MinBoostFOV) CurrBoostFOV = MinBoostFOV;
+		Camera->FieldOfView = CurrBoostFOV;
+	}
+}
+
 // Check the energy remaining and decide what player should be able to do
 void AJumpStartersPawn::CheckEnergy(float Delta)
 {
@@ -317,12 +334,7 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 			}
 
 			// If boosting then increase FOV if not yet at max
-			if (CurrBoostFOV < MaxBoostFOV)
-			{
-				CurrBoostFOV += Delta * 12.0f;
-				if (CurrBoostFOV > MaxBoostFOV) CurrBoostFOV = MaxBoostFOV;
-				Camera->FieldOfView = CurrBoostFOV;
-			}
+			ChangeCameraFOV(Delta * 12.0f);
 
 			bHasIncreasedFOV = true;
 		}
@@ -330,11 +342,9 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 	else { bIsBoosting = false; }
 
 	// If not accelerating from boost, lower FOV down to min over time
-	if (!bHasIncreasedFOV && CurrBoostFOV > MinBoostFOV)
+	if (!bHasIncreasedFOV)
 	{
-		CurrBoostFOV -= Delta * 12.0f;
-		if (CurrBoostFOV < MinBoostFOV) CurrBoostFOV = MinBoostFOV;
-		Camera->FieldOfView = CurrBoostFOV;
+		ChangeCameraFOV(-12.0f * Delta);
 	}
 }
 

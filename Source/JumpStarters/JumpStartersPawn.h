@@ -166,6 +166,13 @@ public:
 	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
 	int32 Position;
 
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	float MaxBoostFOV = 110.0f;
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	float MinBoostFOV = 100.0f;
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	float CurrBoostFOV;
+
 	// Overlap event
 	//UFUNCTION()
 	//void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -235,6 +242,9 @@ public:
 	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
 	void ChangeResetTransform(FVector CheckpointLocation, FRotator CheckpointRotation);
 
+	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
+	void ChangeCameraFOV(float DeltaFOV);
+
 	static const FName LookUpBinding;
 	static const FName LookRightBinding;
 
@@ -288,10 +298,6 @@ private:
 	float CurrentThrottle;
 	bool bHasJumpedLeft;
 	bool bHasJumpedRight;
-
-	const float MaxBoostFOV = 110.0f;
-	const float MinBoostFOV = 100.0f;
-	float CurrBoostFOV;
 
 
 public:
