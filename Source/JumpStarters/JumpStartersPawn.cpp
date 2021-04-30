@@ -58,6 +58,13 @@ AJumpStartersPawn::AJumpStartersPawn()
 	VehicleCollider->SetRelativeScale3D(FVector(6.23f, 2.75f, 2.0f));
 	VehicleCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 77.0f));
 	VehicleCollider->SetupAttachment(GetMesh());
+
+	static ConstructorHelpers::FClassFinder<AActor> WallColliderBPClass(TEXT("/Game/RaceSystem/WallSoundCollider"));
+	WallSoundCollider = CreateDefaultSubobject<UChildActorComponent>(TEXT("WallSoundCollider0"));
+	WallSoundCollider->SetChildActorClass(ColliderBPClass.Class);
+	WallSoundCollider->SetRelativeScale3D(FVector(6.75f, 3.5f, 1.15f));
+	WallSoundCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+	WallSoundCollider->SetupAttachment(GetMesh());
 	
 	// Simulation
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
@@ -147,10 +154,10 @@ AJumpStartersPawn::AJumpStartersPawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
-	Camera->FieldOfView = 90.f;
+	Camera->FieldOfView = 100.f;
 
 	// Create In-Car camera component 
-	InternalCameraOrigin = FVector(0.0f, -40.0f, 120.0f);
+	InternalCameraOrigin = FVector(110.0f, 0.0f, 120.0f);
 
 	InternalCameraBase = CreateDefaultSubobject<USceneComponent>(TEXT("InternalCameraBase"));
 	InternalCameraBase->SetRelativeLocation(InternalCameraOrigin);
@@ -158,7 +165,7 @@ AJumpStartersPawn::AJumpStartersPawn()
 
 	InternalCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("InternalCamera"));
 	InternalCamera->bUsePawnControlRotation = false;
-	InternalCamera->FieldOfView = 90.f;
+	InternalCamera->FieldOfView = 100.f;
 	InternalCamera->SetupAttachment(InternalCameraBase);
 
 	//Setup TextRenderMaterial
@@ -293,6 +300,8 @@ void AJumpStartersPawn::EnableIncarView(const bool bState, const bool bForce)
 // Check the energy remaining and decide what player should be able to do
 void AJumpStartersPawn::CheckEnergy(float Delta)
 {
+	bool bHasIncreasedFOV = false;
+
 	if (RemainingEnergy > 0.0f)
 	{
 		if (bIsBoosting)
@@ -306,12 +315,26 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 				Car->AddForce(CarForward * BaseBoostForce * Car->GetMass());
 				DecreaseEnergy(Delta);
 			}
+
+			// If boosting then increase FOV if not yet at max
+			if (CurrBoostFOV < MaxBoostFOV)
+			{
+				CurrBoostFOV += Delta * 12.0f;
+				if (CurrBoostFOV > MaxBoostFOV) CurrBoostFOV = MaxBoostFOV;
+				Camera->FieldOfView = CurrBoostFOV;
+			}
+
+			bHasIncreasedFOV = true;
 		}
 	}
-	else
+	else { bIsBoosting = false; }
+
+	// If not accelerating from boost, lower FOV down to min over time
+	if (!bHasIncreasedFOV && CurrBoostFOV > MinBoostFOV)
 	{
-		bIsBoosting = false;
-		// Prompt user they are out of energy
+		CurrBoostFOV -= Delta * 12.0f;
+		if (CurrBoostFOV < MinBoostFOV) CurrBoostFOV = MinBoostFOV;
+		Camera->FieldOfView = CurrBoostFOV;
 	}
 }
 
@@ -566,6 +589,8 @@ void AJumpStartersPawn::BeginPlay()
 	CurrentThrottle = 0.0f;
 	bHasJumpedLeft = false;
 	bHasJumpedRight = false;
+
+	CurrBoostFOV = MinBoostFOV;
 }
 
 void AJumpStartersPawn::OnResetVR()

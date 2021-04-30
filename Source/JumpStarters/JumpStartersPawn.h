@@ -66,6 +66,10 @@ class AJumpStartersPawn : public AWheeledVehicle
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* VehicleCollider;
 
+	/** Actor component for the vehicle collider */
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UChildActorComponent* WallSoundCollider;
+
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	//class USoundCue* JumpCue;
@@ -284,6 +288,10 @@ private:
 	float CurrentThrottle;
 	bool bHasJumpedLeft;
 	bool bHasJumpedRight;
+
+	const float MaxBoostFOV = 110.0f;
+	const float MinBoostFOV = 100.0f;
+	float CurrBoostFOV;
 
 
 public:
