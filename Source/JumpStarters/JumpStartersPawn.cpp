@@ -39,10 +39,10 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 AJumpStartersPawn::AJumpStartersPawn()
 {
 	// Car mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Models/Car1_FinalExport.Car1_FinalExport"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Models/BlueModel/BlueCar.BlueCar"));
 	GetMesh()->SetSkeletalMesh(CarMesh.Object);
 
-	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/Car1_Anim"));
+	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/BlueModel/BlueCar_Anim"));
 	GetMesh()->SetAnimInstanceClass(AnimBPClass.Class);
 
 	// Setup exhaust component and vehicle collider for external events
