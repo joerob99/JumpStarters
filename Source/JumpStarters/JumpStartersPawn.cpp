@@ -39,10 +39,10 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 AJumpStartersPawn::AJumpStartersPawn()
 {
 	// Car mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Models/BlueModel/BlueCar.BlueCar"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Models/BlueCar1/BlueCar.BlueCar"));
 	GetMesh()->SetSkeletalMesh(CarMesh.Object);
 
-	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/BlueModel/BlueCar_Anim"));
+	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/BlueCar1/BlueCar_Anim"));
 	GetMesh()->SetAnimInstanceClass(AnimBPClass.Class);
 
 	// Setup exhaust component and vehicle collider for external events
@@ -61,7 +61,7 @@ AJumpStartersPawn::AJumpStartersPawn()
 
 	static ConstructorHelpers::FClassFinder<AActor> WallColliderBPClass(TEXT("/Game/RaceSystem/WallSoundCollider"));
 	WallSoundCollider = CreateDefaultSubobject<UChildActorComponent>(TEXT("WallSoundCollider0"));
-	WallSoundCollider->SetChildActorClass(ColliderBPClass.Class);
+	WallSoundCollider->SetChildActorClass(WallColliderBPClass.Class);
 	WallSoundCollider->SetRelativeScale3D(FVector(6.75f, 3.5f, 1.15f));
 	WallSoundCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
 	WallSoundCollider->SetupAttachment(GetMesh());
