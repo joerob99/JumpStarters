@@ -65,6 +65,12 @@ AJumpStartersPawn::AJumpStartersPawn()
 	WallSoundCollider->SetRelativeScale3D(FVector(6.75f, 3.5f, 1.15f));
 	WallSoundCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
 	WallSoundCollider->SetupAttachment(GetMesh());
+
+	JumpAnimActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("JumpAnimActorActor0"));
+	JumpAnimActor->SetChildActorClass(AJumpAnimActor::StaticClass());
+	//WallSoundCollider->SetRelativeScale3D(FVector(6.75f, 3.5f, 1.15f));
+	JumpAnimActor->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f));
+	JumpAnimActor->SetupAttachment(GetMesh());
 	
 	// Simulation
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
@@ -253,7 +259,7 @@ void AJumpStartersPawn::MoveRight(float Val)
 
 	if (Val != 0.0f && bIsJumping) {
 		// Allow rotation adjustment in mid-air
-		DesiredYaw += Val * 0.1 * (ThisCarType == CarType::Spring ? (ThisCarType == CarType::Jacks ? HighEnergyCost : LowEnergyCost) : MediumEnergyCost);
+		DesiredYaw += Val * 0.1 * (ThisCarType == ECT::CarType::Spring ? (ThisCarType == ECT::CarType::Jacks ? HighEnergyCost : LowEnergyCost) : MediumEnergyCost);
 	}
 
 	RightTurnAxisVal = Val;
@@ -392,16 +398,16 @@ void AJumpStartersPawn::CheckJumpTimer(float Delta)
 			bIsJumpingLeft = false;
 			bIsJumpingRight = false;
 			JumpInputTimer = JumpInputTimerMax;
-			DoJump(JumpType::Up);
+			DoJump(EJT::JumpType::Up);
 		}
 		else if ((bIsJumpingLeft || bIsJumpingRight) && JumpInputTimer > 0.0f) JumpInputTimer -= Delta;
-		else if (bIsJumpingLeft && !bIsJumpingRight && JumpInputTimer <= 0.0f && ThisCarType == CarType::Jacks)
+		else if (bIsJumpingLeft && !bIsJumpingRight && JumpInputTimer <= 0.0f && ThisCarType == ECT::CarType::Jacks)
 		{
-			DoJump(JumpType::Left);
+			DoJump(EJT::JumpType::Left);
 		}
-		else if (!bIsJumpingLeft && bIsJumpingRight && JumpInputTimer <= 0.0f && ThisCarType == CarType::Jacks)
+		else if (!bIsJumpingLeft && bIsJumpingRight && JumpInputTimer <= 0.0f && ThisCarType == ECT::CarType::Jacks)
 		{
-			DoJump(JumpType::Right);
+			DoJump(EJT::JumpType::Right);
 		}
 		else {
 			bIsJumpingLeft = false;
@@ -411,12 +417,12 @@ void AJumpStartersPawn::CheckJumpTimer(float Delta)
 	}
 	else if (bIsJumping)
 	{
-		if (bIsJumpingLeft && bIsJumpingRight && ThisCarType == CarType::RocketBoosters)
+		if (bIsJumpingLeft && bIsJumpingRight && ThisCarType == ECT::CarType::RocketBoosters)
 		{
 			bIsJumpingLeft = false;
 			bIsJumpingRight = false;
 			JumpInputTimer = JumpInputTimerMax;
-			DoJump(JumpType::Up);
+			DoJump(EJT::JumpType::Up);
 		}
 		else if ((bIsJumpingLeft || bIsJumpingRight) && JumpInputTimer > 0.0f) JumpInputTimer -= Delta;
 		else
@@ -642,18 +648,18 @@ void AJumpStartersPawn::OnReset()
 	}
 }
 
-void AJumpStartersPawn::DoJump(TEnumAsByte<JumpType> Jump)
+void AJumpStartersPawn::DoJump(TEnumAsByte<EJT::JumpType> Jump)
 {
 	float EnergyScalar = 0.0f, ForceScalar = 1.0f;
 
 	switch (ThisCarType) {
-	case CarType::Jacks:
+	case ECT::CarType::Jacks:
 		EnergyScalar = MediumEnergyCost;
 		break;
-	case CarType::Spring:
+	case ECT::CarType::Spring:
 		EnergyScalar = LowEnergyCost;
 		break;
-	case CarType::RocketBoosters:
+	case ECT::CarType::RocketBoosters:
 		EnergyScalar = HighEnergyCost;
 		break;
 	}
@@ -669,14 +675,14 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<JumpType> Jump)
 
 			switch (Jump)
 			{
-			case JumpType::Up:
+			case EJT::JumpType::Up:
 				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
 				break;
-			case JumpType::Left:
+			case EJT::JumpType::Left:
 				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector() + (Car->GetRightVector() * -1)) * BaseJumpForce * ForceScalar * Car->GetMass());
 				bHasJumpedLeft = true;
 				break;
-			case JumpType::Right:
+			case EJT::JumpType::Right:
 				Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector() + Car->GetRightVector()) * BaseJumpForce * ForceScalar * Car->GetMass());
 				bHasJumpedRight = true;
 				break;
@@ -687,17 +693,23 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<JumpType> Jump)
 
 			bIsJumping = true;
 			bStartJumpTimer = true;
+
+			// Animate the jump within child actor
+			Cast<AJumpAnimActor>(JumpAnimActor->GetChildActor())->AnimateJump(ThisCarType, Jump);
 		}
 	}
 
 	// Double jump for rocket booster cars
-	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == CarType::RocketBoosters && RemainingEnergy >= HighEnergyCost && Jump == JumpType::Up) {
+	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == ECT::CarType::RocketBoosters && RemainingEnergy >= HighEnergyCost && Jump == EJT::JumpType::Up) {
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car) {
 			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * (1.0f - HighEnergyCost * 0.05) * Car->GetMass());
 			RemainingEnergy -= HighEnergyCost;
 		}
 		bHasDoubleJumped = true;
+
+		// Animate the jump within child actor
+		Cast<AJumpAnimActor>(JumpAnimActor->GetChildActor())->AnimateJump(ThisCarType, Jump);
 	}
 
 	bIsJumpingLeft = false;
@@ -707,7 +719,7 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<JumpType> Jump)
 
 void AJumpStartersPawn::OnJump()
 {
-	DoJump(JumpType::Up);
+	DoJump(EJT::JumpType::Up);
 }
 
 void AJumpStartersPawn::OnJumpLeft()

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "WheeledVehicle.h"
+#include "Public/JumpAnimActor.h"
+#include "JumpStartersEnums.h"
 #include "JumpStartersPawn.generated.h"
 
 class UCameraComponent;
@@ -12,22 +14,6 @@ class UTextRenderComponent;
 class UInputComponent;
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
-
-UENUM(BlueprintType)
-enum CarType
-{
-	Spring			UMETA(DisplayName = "Spring"),
-	Jacks			UMETA(DisplayName = "Jacks"),
-	RocketBoosters	UMETA(DisplayName = "RocketBoosters"),
-};
-
-UENUM()
-enum JumpType
-{
-	Up				UMETA(DisplayName = "Up"),
-	Left			UMETA(DisplayName = "Left"),
-	Right			UMETA(DisplayName = "Right"),
-};
 
 UCLASS(config=Game)
 class AJumpStartersPawn : public AWheeledVehicle
@@ -69,6 +55,10 @@ class AJumpStartersPawn : public AWheeledVehicle
 	/** Actor component for the vehicle collider */
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* WallSoundCollider;
+
+	/** Actor components for spring animations, jacks animations, and rocket animations */
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UChildActorComponent* JumpAnimActor;
 
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -134,7 +124,7 @@ public:
 	float RotCorrectSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<CarType> ThisCarType;
+	TEnumAsByte<ECT::CarType> ThisCarType;
 
 	UPROPERTY(Category = Health, VisibleAnywhere, BlueprintReadWrite)
 	float RemainingEnergy;
@@ -267,7 +257,7 @@ private:
 	void CheckDrift(float Delta);
 	void CheckJumpTimer(float Delta);
 
-	void DoJump(TEnumAsByte<JumpType> Jump);
+	void DoJump(TEnumAsByte<EJT::JumpType> Jump);
 
 	float JumpTimer;
 
