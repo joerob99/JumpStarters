@@ -38,12 +38,19 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
 AJumpStartersPawn::AJumpStartersPawn()
 {
-	// Car mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/Vehicle/Models/BlueCar1/BlueCar1.BlueCar1"));
-	GetMesh()->SetSkeletalMesh(CarMesh.Object);
-
-	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/BlueCar1/BlueCar1_Anim"));
+	// Set default car mesh and animation
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> RedMesh(TEXT("/Game/Vehicle/Models/RedCar1/Car1_FinalExport.Car1_FinalExport"));
+	RedCarMesh = RedMesh.Object;
+	GetMesh()->SetSkeletalMesh(RedCarMesh);
+	static ConstructorHelpers::FClassFinder<UObject> AnimBPClass(TEXT("/Game/Vehicle/Models/RedCar1/Car1_Anim"));
 	GetMesh()->SetAnimInstanceClass(AnimBPClass.Class);
+
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> BlueMesh(TEXT("/Game/Vehicle/Models/BlueCar1/BlueCar1.BlueCar1"));
+	BlueCarMesh = BlueMesh.Object;
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> YellowMesh(TEXT("/Game/Vehicle/Models/YellowCar1/YellowCar1.YellowCar1"));
+	YellowCarMesh = YellowMesh.Object;
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> GreenMesh(TEXT("/Game/Vehicle/Models/GreenCar1/GreenCar1.GreenCar1"));
+	GreenCarMesh = GreenMesh.Object;
 
 	// Setup exhaust component and vehicle collider for external events
 	static ConstructorHelpers::FClassFinder<AActor> ExhaustBPClass(TEXT("/Game/Sounds/CarSFX/Default/DefaultExhaustEmitter"));
@@ -317,6 +324,28 @@ void AJumpStartersPawn::ChangeCameraFOV(float DeltaFOV)
 		CurrBoostFOV += DeltaFOV;
 		if (CurrBoostFOV < MinBoostFOV) CurrBoostFOV = MinBoostFOV;
 		Camera->FieldOfView = CurrBoostFOV;
+	}
+}
+
+// 
+void AJumpStartersPawn::ChangeSkelMesh(TEnumAsByte<ECC::CarColor> Color)
+{
+	switch (Color)
+	{
+	case ECC::CarColor::Red:
+		GetMesh()->SetSkeletalMesh(RedCarMesh);
+		break;
+	case ECC::CarColor::Blue:
+		GetMesh()->SetSkeletalMesh(BlueCarMesh);
+		break;
+	case ECC::CarColor::Yellow:
+		GetMesh()->SetSkeletalMesh(YellowCarMesh);
+		break;
+	case ECC::CarColor::Green:
+		GetMesh()->SetSkeletalMesh(GreenCarMesh);
+		break;
+	default:
+		break;
 	}
 }
 

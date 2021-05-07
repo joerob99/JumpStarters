@@ -26,3 +26,15 @@ namespace EJT
 		Right			UMETA(DisplayName = "Right"),
 	};
 }
+
+UENUM(BlueprintType)
+namespace ECC
+{
+	enum CarColor
+	{
+		Red				UMETA(DisplayName = "Red"),
+		Blue			UMETA(DisplayName = "Blue"),
+		Yellow			UMETA(DisplayName = "Yellow"),
+		Green			UMETA(DisplayName = "Green"),
+	};
+}

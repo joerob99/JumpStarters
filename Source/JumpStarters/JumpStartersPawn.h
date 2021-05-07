@@ -60,6 +60,15 @@ class AJumpStartersPawn : public AWheeledVehicle
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* JumpAnimActor;
 
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USkeletalMesh* RedCarMesh;
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USkeletalMesh* BlueCarMesh;
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USkeletalMesh* YellowCarMesh;
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USkeletalMesh* GreenCarMesh;
+
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	//class USoundCue* JumpCue;
@@ -234,6 +243,9 @@ public:
 
 	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
 	void ChangeCameraFOV(float DeltaFOV);
+
+	UFUNCTION(Category = "RaceSystem", BlueprintCallable)
+	void ChangeSkelMesh(TEnumAsByte<ECC::CarColor> Color);
 
 	static const FName LookUpBinding;
 	static const FName LookRightBinding;
