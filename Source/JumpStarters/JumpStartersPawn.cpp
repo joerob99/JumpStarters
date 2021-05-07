@@ -106,6 +106,7 @@ AJumpStartersPawn::AJumpStartersPawn()
 	FVehicleTransmissionData JumpStartersTransmission;
 	TArray<FVehicleGearData> JumpStartersGears;
 	FNavAgentProperties JumpStartersNavAgent;
+	
 
 	JumpStartersEngine.MaxRPM = 5500.0f;
 	JumpStartersEngine.MOI = 1.0f;
@@ -118,7 +119,8 @@ AJumpStartersPawn::AJumpStartersPawn()
 	JumpStartersEngine.TorqueCurve.GetRichCurve()->AddKey(5500.0f, 2500.0f);
 
 	JumpStartersDifferential.DifferentialType = EVehicleDifferential4W::LimitedSlip_4W;
-	JumpStartersDifferential.FrontRearSplit = 0.6f;
+	//JumpStartersDifferential.FrontRearSplit = 0.6f;
+	JumpStartersDifferential.FrontRearSplit = 0.50f;
 	JumpStartersDifferential.FrontLeftRightSplit = 0.5f;
 	JumpStartersDifferential.RearLeftRightSplit = 0.5f;
 	JumpStartersDifferential.CentreBias = 1.3f;
@@ -155,7 +157,7 @@ AJumpStartersPawn::AJumpStartersPawn()
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
 	SpringArm->TargetOffset = FVector(0.f, 0.f, 200.f);
-	SpringArm->SetRelativeRotation(FRotator(-12.5f, 0.f, 0.f));
+	SpringArm->SetRelativeRotation(FRotator(-5.5f, 0.f, 0.f));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 575.0f;
 	SpringArm->bEnableCameraRotationLag = true;
@@ -189,17 +191,17 @@ AJumpStartersPawn::AJumpStartersPawn()
 	// Create text render component for in car speed display
 	InCarSpeed = CreateDefaultSubobject<UTextRenderComponent>(TEXT("IncarSpeed"));
 	InCarSpeed->SetTextMaterial(Material);
-	InCarSpeed->SetRelativeLocation(FVector(70.0f, -75.0f, 99.0f));
+	InCarSpeed->SetRelativeLocation(FVector(0.0f, 0.0f, 60.0f));
 	InCarSpeed->SetRelativeRotation(FRotator(18.0f, 180.0f, 0.0f));
 	InCarSpeed->SetupAttachment(GetMesh());
-	InCarSpeed->SetRelativeScale3D(FVector(1.0f, 0.4f, 0.4f));
+	InCarSpeed->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
 
 	// Create text render component for in car gear display
 	InCarGear = CreateDefaultSubobject<UTextRenderComponent>(TEXT("IncarGear"));
 	InCarGear->SetTextMaterial(Material);
-	InCarGear->SetRelativeLocation(FVector(66.0f, -9.0f, 95.0f));	
+	InCarGear->SetRelativeLocation(FVector(0.0f, 0.0f, 60.0f));	
 	InCarGear->SetRelativeRotation(FRotator(25.0f, 180.0f,0.0f));
-	InCarGear->SetRelativeScale3D(FVector(1.0f, 0.4f, 0.4f));
+	InCarGear->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
 	InCarGear->SetupAttachment(GetMesh());
 	
 	// Colors for the incar gear display. One for normal one for reverse
@@ -485,7 +487,7 @@ void AJumpStartersPawn::Tick(float Delta)
 	UpdateHUDStrings();
 
 	// Set the string in the incar hud
-	SetupInCarHUD();
+	//SetupInCarHUD();
 
 	bool bHMDActive = false;
 #if HMD_MODULE_INCLUDED
@@ -693,13 +695,13 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<EJT::JumpType> Jump)
 		break;
 	}
 
-	if (!bIsJumping && RemainingEnergy >= EnergyScalar)
+	if (!bIsJumping /*&& RemainingEnergy >= EnergyScalar*/)
 	{
 		// Add a force and set a timer for when it ends?
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car)
 		{
-			RemainingEnergy -= EnergyScalar;
+			/*RemainingEnergy -= EnergyScalar;*/
 			ForceScalar = 1.0f - EnergyScalar * 0.05;
 
 			switch (Jump)
@@ -729,11 +731,11 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<EJT::JumpType> Jump)
 	}
 
 	// Double jump for rocket booster cars
-	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == ECT::CarType::RocketBoosters && RemainingEnergy >= HighEnergyCost && Jump == EJT::JumpType::Up) {
+	else if (bIsJumping && !bHasDoubleJumped && ThisCarType == ECT::CarType::RocketBoosters && /*RemainingEnergy >= HighEnergyCost &&*/ Jump == EJT::JumpType::Up) {
 		USkeletalMeshComponent* Car = GetMesh();
 		if (Car) {
 			Car->AddImpulse((Car->GetUpVector() + Car->GetForwardVector()) * BaseJumpForce * (1.0f - HighEnergyCost * 0.05) * Car->GetMass());
-			RemainingEnergy -= HighEnergyCost;
+			/*RemainingEnergy -= HighEnergyCost;*/
 		}
 		bHasDoubleJumped = true;
 
@@ -821,7 +823,6 @@ void AJumpStartersPawn::SetupInCarHUD()
 	{
 		InCarGear = nullptr;
 		InCarSpeed = nullptr;
-		/*
 		// Setup the text render component strings
 		InCarSpeed->SetText(SpeedDisplayString);
 		InCarGear->SetText(GearDisplayString);
@@ -834,7 +835,6 @@ void AJumpStartersPawn::SetupInCarHUD()
 		{
 			InCarGear->SetTextRenderColor(GearDisplayReverseColor);
 		}
-		*/
 	}
 }
 
