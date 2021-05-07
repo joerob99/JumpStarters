@@ -38,3 +38,13 @@ namespace ECC
 		Green			UMETA(DisplayName = "Green"),
 	};
 }
+
+UENUM(BlueprintType)
+namespace EWS
+{
+	enum WheelState
+	{
+		Normal			UMETA(DisplayName = "Normal"),
+		Drift			UMETA(DisplayName = "Drift"),
+	};
+}

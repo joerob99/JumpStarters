@@ -270,6 +270,7 @@ private:
 	void CheckJumpTimer(float Delta);
 
 	void DoJump(TEnumAsByte<EJT::JumpType> Jump);
+	void DoDriftTireSwitch(TEnumAsByte<EWS::WheelState> State);
 
 	float JumpTimer;
 
@@ -300,6 +301,9 @@ private:
 	float CurrentThrottle;
 	bool bHasJumpedLeft;
 	bool bHasJumpedRight;
+
+	bool bStartDriftTimer;
+	float DriftTimer;
 
 
 public:
