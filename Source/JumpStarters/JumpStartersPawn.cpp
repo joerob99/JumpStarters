@@ -107,7 +107,7 @@ AJumpStartersPawn::AJumpStartersPawn()
 	FVehicleTransmissionData JumpStartersTransmission;
 	TArray<FVehicleGearData> JumpStartersGears;
 	FNavAgentProperties JumpStartersNavAgent;
-	
+	FRuntimeFloatCurve JumpStartersSteeringCurve;	
 
 	JumpStartersEngine.MaxRPM = 5500.0f;
 	JumpStartersEngine.MOI = 1.0f;
@@ -120,8 +120,8 @@ AJumpStartersPawn::AJumpStartersPawn()
 	JumpStartersEngine.TorqueCurve.GetRichCurve()->AddKey(5500.0f, 2500.0f);
 
 	JumpStartersDifferential.DifferentialType = EVehicleDifferential4W::LimitedSlip_4W;
-	//JumpStartersDifferential.FrontRearSplit = 0.6f;
-	JumpStartersDifferential.FrontRearSplit = 0.50f;
+	JumpStartersDifferential.FrontRearSplit = 0.6f;
+	//JumpStartersDifferential.FrontRearSplit = 0.50f;
 	JumpStartersDifferential.FrontLeftRightSplit = 0.5f;
 	JumpStartersDifferential.RearLeftRightSplit = 0.5f;
 	JumpStartersDifferential.CentreBias = 1.3f;
@@ -147,10 +147,19 @@ AJumpStartersPawn::AJumpStartersPawn()
 	JumpStartersNavAgent.AgentRadius = 280.0f;
 	JumpStartersNavAgent.AgentHeight = 125.0f;
 
+	JumpStartersSteeringCurve.GetRichCurve()->Reset();
+	JumpStartersSteeringCurve.GetRichCurve()->AddKey(0.0f, 1.0f);
+	JumpStartersSteeringCurve.GetRichCurve()->AddKey(30.0f, 0.8f);
+	JumpStartersSteeringCurve.GetRichCurve()->AddKey(60.0f, 0.65f);
+	JumpStartersSteeringCurve.GetRichCurve()->AddKey(120.0f, 0.525f);
+	JumpStartersSteeringCurve.GetRichCurve()->AddKey(240.0f, 0.4f);
+	JumpStartersSteeringCurve.GetRichCurve()->AddKey(360.0f, 0.3f);
+
 	Vehicle4W->EngineSetup = JumpStartersEngine;
 	Vehicle4W->DifferentialSetup = JumpStartersDifferential;
 	Vehicle4W->TransmissionSetup = JumpStartersTransmission;
 	Vehicle4W->NavAgentProps = JumpStartersNavAgent;
+	Vehicle4W->SteeringCurve = JumpStartersSteeringCurve;
 
 	// Set up collisions
 	//GetMesh()->OnComponentBeginOverlap.AddDynamic(this, &AJumpStartersPawn::OnOverlapBegin);
@@ -281,6 +290,14 @@ void AJumpStartersPawn::OnHandbrakePressed()
 	DoDriftTireSwitch(EWS::WheelState::Drift);
 	bStartDriftTimer = true;
 	bIsDrifting = true;
+	if (!bDriftTires) {
+		DoDriftTireSwitch(EWS::WheelState::Drift);
+		bDriftTires = true;
+	}
+	else if (bDriftTires) {
+		DoDriftTireSwitch(EWS::WheelState::Normal);
+		bDriftTires = false;
+	}
 }
 
 void AJumpStartersPawn::OnHandbrakeReleased()
@@ -419,7 +436,7 @@ void AJumpStartersPawn::CheckDrift(float Delta)
 		if (!bIsJumping && DriftAngle > 10.0f && DriftAngle < 75.0f /*&& CurrentThrottle >= 0.05f*/)
 		{
 			// Switch tires to use drifting grip if drift angle is good enough
-			if (bIsDrifting == false && !bStartDriftTimer) DoDriftTireSwitch(EWS::WheelState::Drift);
+			//if (bIsDrifting == false && !bStartDriftTimer) DoDriftTireSwitch(EWS::WheelState::Drift);
 
 			bIsDrifting = true;
 			Car->AddForce((Velocity + CarForward) * Car->GetMass() * DriftAngle * BaseDriftForce * Delta);
@@ -427,7 +444,7 @@ void AJumpStartersPawn::CheckDrift(float Delta)
 		}
 		else {
 			// Switch tires to use normal grip if drift angle is not enough to drift
-			if (bIsDrifting == true && DriftTimer >= 1.5f) DoDriftTireSwitch(EWS::WheelState::Normal);
+			//if (bIsDrifting == true && DriftTimer >= 1.5f) DoDriftTireSwitch(EWS::WheelState::Normal);
 
 			bIsDrifting = false;
 		}
@@ -655,6 +672,7 @@ void AJumpStartersPawn::BeginPlay()
 
 	bStartDriftTimer = false;
 	DriftTimer = 0.0f;
+	bDriftTires = false;
 }
 
 void AJumpStartersPawn::OnResetVR()

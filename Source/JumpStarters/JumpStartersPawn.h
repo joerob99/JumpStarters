@@ -304,6 +304,7 @@ private:
 
 	bool bStartDriftTimer;
 	float DriftTimer;
+	bool bDriftTires;
 
 
 public:
