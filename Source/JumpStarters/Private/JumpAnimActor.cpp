@@ -14,14 +14,14 @@ AJumpAnimActor::AJumpAnimActor()
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root0"));
 	SetRootComponent(Root);
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SpringMeshObject(TEXT("/Game/Vehicle/Anims/SpringJump.SpringJump"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SpringMeshObject(TEXT("/Game/Vehicle/Anims/Spring/SpringJump.SpringJump"));
 	SpringSkel = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SpringSkel0"));
 	if (SpringMeshObject.Object) {
 		SpringSkel->SetSkeletalMesh(SpringMeshObject.Object);
 		SpringSkel->SetupAttachment(GetRootComponent());
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimSequence> SpringAnimObject(TEXT("/Game/Vehicle/Anims/SpringJump_Anim.SpringJump_Anim"));
+	static ConstructorHelpers::FObjectFinder<UAnimSequence> SpringAnimObject(TEXT("/Game/Vehicle/Anims/Spring/SpringJump_Anim.SpringJump_Anim"));
 	SpringAnim = SpringAnimObject.Object;
 }
 
