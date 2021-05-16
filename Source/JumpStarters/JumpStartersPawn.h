@@ -306,6 +306,8 @@ private:
 	float DriftTimer;
 	bool bDriftTires;
 
+	float BoostParticleTimer;
+
 
 public:
 	/** Returns SpringArm subobject **/

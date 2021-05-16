@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "JumpStartersEnums.h"
 #include "Containers/EnumAsByte.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "JumpAnimActor.generated.h"
 
 UCLASS()
@@ -35,13 +37,21 @@ class JUMPSTARTERS_API AJumpAnimActor : public AActor
 
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Root;
+
+	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* RocketParticleSystem;
+	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BoostParticleSystem;
 	
 public:	
 	// Sets default values for this actor's properties
 	AJumpAnimActor();
 
-	// Jump using spring animation
+	// Jump using different animations for different jump types
 	void AnimateJump(TEnumAsByte<ECT::CarType> MyCarType, TEnumAsByte<EJT::JumpType> MyJumpType);
+
+	// Show particle effect differently depending on if boosting or not
+	bool PlayParticleEffect(bool bIsAnimatingBoost);
 
 protected:
 	// Called when the game starts or when spawned

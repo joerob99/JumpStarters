@@ -381,6 +381,15 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 	{
 		if (bIsBoosting)
 		{
+			BoostParticleTimer += Delta;
+
+			if (BoostParticleTimer >= 0.0f)
+			{
+				// Play particle effect if the car is boosting
+				Cast<AJumpAnimActor>(JumpAnimActor->GetChildActor())->PlayParticleEffect(true);
+				BoostParticleTimer = -0.2f;
+			}
+
 			// Add a force and set a timer for when it ends?
 			USkeletalMeshComponent* Car = GetMesh(); //Cast<UStaticMeshComponent>(this->GetRootComponent());
 			if (Car)
@@ -396,8 +405,12 @@ void AJumpStartersPawn::CheckEnergy(float Delta)
 
 			bHasIncreasedFOV = true;
 		}
+		else
+		{
+			BoostParticleTimer = 0.0f;
+		}
 	}
-	else { bIsBoosting = false; }
+	else { bIsBoosting = false; BoostParticleTimer = 0.0f; }
 
 	// If not accelerating from boost, lower FOV down to min over time
 	if (!bHasIncreasedFOV)
@@ -673,6 +686,8 @@ void AJumpStartersPawn::BeginPlay()
 	bStartDriftTimer = false;
 	DriftTimer = 0.0f;
 	bDriftTires = false;
+
+	BoostParticleTimer = 0.0f;
 }
 
 void AJumpStartersPawn::OnResetVR()
