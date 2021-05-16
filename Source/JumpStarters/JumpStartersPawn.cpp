@@ -449,20 +449,31 @@ void AJumpStartersPawn::CheckDrift(float Delta)
 
 		//Car->AddTorqueInDegrees(TurnTorque * BaseDriftTorque * Car->GetMass());
 
-		if (!bIsJumping && DriftAngle > 10.0f && DriftAngle < 75.0f /*&& CurrentThrottle >= 0.05f*/)
+		if (!bIsJumping && DriftAngle > 10.0f && DriftAngle < 77.5f && bDriftTires)
 		{
 			// Switch tires to use drifting grip if drift angle is good enough
 			//if (bIsDrifting == false && !bStartDriftTimer) DoDriftTireSwitch(EWS::WheelState::Drift);
 
+			//if (bStartDriftTimer) DriftTimer += Delta;
+			if (DriftTimer >= 0.0f)
+			{
+				// Play particle effect if the car is drifting
+				Cast<AJumpAnimActor>(JumpAnimActor->GetChildActor())->TireSmoke();
+				DriftTimer = -0.2f;
+			}
+
+			bStartDriftTimer = true;
 			bIsDrifting = true;
 			Car->AddForce((Velocity + CarForward) * Car->GetMass() * DriftAngle * BaseDriftForce * Delta);
-			IncreaseEnergy(Delta * (DriftAngle / 10.0f) / 13.0f);
+			IncreaseEnergy(Delta * (DriftAngle / 10.0f) / 10.0f);
 		}
 		else {
 			// Switch tires to use normal grip if drift angle is not enough to drift
 			//if (bIsDrifting == true && DriftTimer >= 1.5f) DoDriftTireSwitch(EWS::WheelState::Normal);
 
 			bIsDrifting = false;
+			bStartDriftTimer = false;
+			DriftTimer = 0.0f;
 		}
 	}
 }

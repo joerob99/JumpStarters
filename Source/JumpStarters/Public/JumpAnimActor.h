@@ -23,8 +23,6 @@ class JUMPSTARTERS_API AJumpAnimActor : public AActor
 	UAnimSequence* JacksAnimLeft;
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UAnimSequence* JacksAnimRight;
-	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UAnimSequence* RocketAnim;
 
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* SpringSkel;
@@ -42,6 +40,8 @@ class JUMPSTARTERS_API AJumpAnimActor : public AActor
 	UParticleSystem* RocketParticleSystem;
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BoostParticleSystem;
+	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* DriftParticleSystem;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -52,6 +52,9 @@ public:
 
 	// Show particle effect differently depending on if boosting or not
 	bool PlayParticleEffect(bool bIsAnimatingBoost);
+
+	// Play particle effects for drift/tire smoke
+	void TireSmoke();
 
 protected:
 	// Called when the game starts or when spawned

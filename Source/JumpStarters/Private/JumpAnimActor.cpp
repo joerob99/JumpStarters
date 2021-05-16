@@ -42,8 +42,8 @@ AJumpAnimActor::AJumpAnimActor()
 	JacksAnimRight = JacksAnimRightObject.Object;
 
 	RocketParticleSystem = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("/Game/Vehicle/Anims/Rocket/RocketParticles.RocketParticles")).Object;
-
 	BoostParticleSystem = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("/Game/Vehicle/Anims/Boost/BoostParticles.BoostParticles")).Object;
+	DriftParticleSystem = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("/Game/Vehicle/Anims/Drift/DriftParticles.DriftParticles")).Object;
 }
 
 void AJumpAnimActor::AnimateJump(TEnumAsByte<ECT::CarType> MyCarType, TEnumAsByte<EJT::JumpType> MyJumpType)
@@ -83,6 +83,15 @@ bool AJumpAnimActor::PlayParticleEffect(bool bIsAnimatingBoost)
 		return true;
 	}
 	return false;
+}
+
+// Play particle effects based on whether to animate boost or rocket boosters
+void AJumpAnimActor::TireSmoke()
+{
+	UGameplayStatics::SpawnEmitterAttached(DriftParticleSystem, GetRootComponent(), TEXT("DEmitter0"), FVector(-140.f, -90.f, -40.f),
+		FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset);
+	UGameplayStatics::SpawnEmitterAttached(DriftParticleSystem, GetRootComponent(), TEXT("DEmitter1"), FVector(-140.f, 90.f, -40.f),
+		FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset);
 }
 
 // Called when the game starts or when spawned
