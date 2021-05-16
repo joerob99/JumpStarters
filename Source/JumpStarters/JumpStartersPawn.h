@@ -15,6 +15,8 @@ class UInputComponent;
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDisplayTireDelegate, bool, SwitchedToDriftTire);
+
 UCLASS(config=Game)
 class AJumpStartersPawn : public AWheeledVehicle
 {
@@ -68,6 +70,9 @@ class AJumpStartersPawn : public AWheeledVehicle
 	USkeletalMesh* YellowCarMesh;
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMesh* GreenCarMesh;
+
+	UPROPERTY(Category = Display, BlueprintAssignable)
+	FDisplayTireDelegate OnTireUpdated;
 
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -171,6 +176,9 @@ public:
 	float MinBoostFOV = 100.0f;
 	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
 	float CurrBoostFOV;
+
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	bool bDriftTires;
 
 	// Overlap event
 	//UFUNCTION()
@@ -304,7 +312,7 @@ private:
 
 	bool bStartDriftTimer;
 	float DriftTimer;
-	bool bDriftTires;
+	//bool bDriftTires;
 
 	float BoostParticleTimer;
 

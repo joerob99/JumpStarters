@@ -286,17 +286,20 @@ void AJumpStartersPawn::MoveRight(float Val)
 
 void AJumpStartersPawn::OnHandbrakePressed()
 {
-	GetVehicleMovementComponent()->SetHandbrakeInput(true);
-	DoDriftTireSwitch(EWS::WheelState::Drift);
-	bStartDriftTimer = true;
-	bIsDrifting = true;
+	//GetVehicleMovementComponent()->SetHandbrakeInput(true);
+	//DoDriftTireSwitch(EWS::WheelState::Drift);
+	//bStartDriftTimer = true;
+	//bIsDrifting = true;
 	if (!bDriftTires) {
+		OnTireUpdated.Broadcast(true);
 		DoDriftTireSwitch(EWS::WheelState::Drift);
-		bDriftTires = true;
+		GetVehicleMovementComponent()->SetHandbrakeInput(true);
+		bStartDriftTimer = true;
+		bIsDrifting = true;
 	}
 	else if (bDriftTires) {
+		OnTireUpdated.Broadcast(false);
 		DoDriftTireSwitch(EWS::WheelState::Normal);
-		bDriftTires = false;
 	}
 }
 
@@ -800,6 +803,9 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<EJT::JumpType> Jump)
 
 void AJumpStartersPawn::DoDriftTireSwitch(TEnumAsByte<EWS::WheelState> State)
 {
+	if (bDriftTires && State == EWS::WheelState::Drift) { return; }
+	else if (!bDriftTires && State == EWS::WheelState::Normal) { return; }
+
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
 
 	check(Vehicle4W->WheelSetups.Num() == 4);
@@ -833,6 +839,9 @@ void AJumpStartersPawn::DoDriftTireSwitch(TEnumAsByte<EWS::WheelState> State)
 	GetMesh()->SetPhysicsLinearVelocity(PreTireSwitchVelocity);
 	GetMesh()->SetPhysicsAngularVelocity(PreTireSwitchAngVel);
 	Vehicle4W->SetTargetGear(PreTireSwitchGear, true);
+
+	if (State == EWS::WheelState::Drift) { bDriftTires = true; }
+	else if (State == EWS::WheelState::Normal) { bDriftTires = false; }
 }
 
 void AJumpStartersPawn::OnJump()
