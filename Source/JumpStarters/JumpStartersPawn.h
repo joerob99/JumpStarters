@@ -15,7 +15,11 @@ class UInputComponent;
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
+// Delegate function to broadcast display tire changed events
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDisplayTireDelegate, bool, SwitchedToDriftTire);
+
+// Delegate function to broadcast play jump sound events
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayJumpSoundDelegate, ECT::CarType, JumpingCarType);
 
 UCLASS(config=Game)
 class AJumpStartersPawn : public AWheeledVehicle
@@ -73,6 +77,8 @@ class AJumpStartersPawn : public AWheeledVehicle
 
 	UPROPERTY(Category = Display, BlueprintAssignable)
 	FDisplayTireDelegate OnTireUpdated;
+	UPROPERTY(Category = Audio, BlueprintAssignable)
+	FPlayJumpSoundDelegate OnJumpPlaySound;
 
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

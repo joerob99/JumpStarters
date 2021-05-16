@@ -456,7 +456,7 @@ void AJumpStartersPawn::CheckDrift(float Delta)
 
 			bIsDrifting = true;
 			Car->AddForce((Velocity + CarForward) * Car->GetMass() * DriftAngle * BaseDriftForce * Delta);
-			IncreaseEnergy(Delta * (DriftAngle / 10.0f) / 20.0f);
+			IncreaseEnergy(Delta * (DriftAngle / 10.0f) / 13.0f);
 		}
 		else {
 			// Switch tires to use normal grip if drift angle is not enough to drift
@@ -780,6 +780,9 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<EJT::JumpType> Jump)
 
 			// Animate the jump within child actor
 			Cast<AJumpAnimActor>(JumpAnimActor->GetChildActor())->AnimateJump(ThisCarType, Jump);
+
+			// Broadcast that a sound should be played from blueprint
+			OnJumpPlaySound.Broadcast(ThisCarType);
 		}
 	}
 
@@ -794,6 +797,9 @@ void AJumpStartersPawn::DoJump(TEnumAsByte<EJT::JumpType> Jump)
 
 		// Animate the jump within child actor
 		Cast<AJumpAnimActor>(JumpAnimActor->GetChildActor())->AnimateJump(ThisCarType, Jump);
+
+		// Broadcast that a sound should be played from blueprint
+		OnJumpPlaySound.Broadcast(ThisCarType);
 	}
 
 	bIsJumpingLeft = false;
