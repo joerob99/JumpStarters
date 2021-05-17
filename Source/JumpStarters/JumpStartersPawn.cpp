@@ -79,6 +79,15 @@ AJumpStartersPawn::AJumpStartersPawn()
 	//WallSoundCollider->SetRelativeScale3D(FVector(6.75f, 3.5f, 1.15f));
 	JumpAnimActor->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f));
 	JumpAnimActor->SetupAttachment(GetMesh());
+
+	// Setup dynamic material instance for speedlines
+	UMaterial* SpeedLinesMat = ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("/Game/Vehicle/Anims/Boost/SpeedLines.SpeedLines")).Object;
+	if (SpeedLinesMat)
+	{
+		SpeedLinesDynamic = UMaterialInstanceDynamic::Create(SpeedLinesMat, this, TEXT("SpeedLinesDynamic"));
+		PostProcess = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcess"));
+		PostProcess->SetupAttachment(GetMesh());
+	}
 	
 	// Simulation
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
@@ -336,7 +345,7 @@ void AJumpStartersPawn::EnableIncarView(const bool bState, const bool bForce)
 	}
 }
 
-//
+// Change the first camera's field of view to give a greater sense of speed
 void AJumpStartersPawn::ChangeCameraFOV(float DeltaFOV)
 {
 	if (DeltaFOV > 0.0f && CurrBoostFOV < MaxBoostFOV)
@@ -351,6 +360,10 @@ void AJumpStartersPawn::ChangeCameraFOV(float DeltaFOV)
 		if (CurrBoostFOV < MinBoostFOV) CurrBoostFOV = MinBoostFOV;
 		Camera->FieldOfView = CurrBoostFOV;
 	}
+
+	// Change the weight on the speedlines post processing effect to allow differences in transparency
+	float Weight = (CurrBoostFOV - MinBoostFOV) / (MaxBoostFOV - MinBoostFOV);
+	SpeedLinesDynamic->SetScalarParameterValue(TEXT("Weight"), Weight);
 }
 
 // 
@@ -702,6 +715,11 @@ void AJumpStartersPawn::BeginPlay()
 	bDriftTires = false;
 
 	BoostParticleTimer = 0.0f;
+
+	if (SpeedLinesDynamic)
+	{
+		PostProcess->AddOrUpdateBlendable(SpeedLinesDynamic);
+	}
 }
 
 void AJumpStartersPawn::OnResetVR()

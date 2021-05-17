@@ -6,6 +6,9 @@
 #include "WheeledVehicle.h"
 #include "Public/JumpAnimActor.h"
 #include "JumpStartersEnums.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/Material.h"
+#include "Components/PostProcessComponent.h"
 #include "JumpStartersPawn.generated.h"
 
 class UCameraComponent;
@@ -79,6 +82,8 @@ class AJumpStartersPawn : public AWheeledVehicle
 	FDisplayTireDelegate OnTireUpdated;
 	UPROPERTY(Category = Audio, BlueprintAssignable)
 	FPlayJumpSoundDelegate OnJumpPlaySound;
+
+
 
 	//sound-related
 	//UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -185,6 +190,12 @@ public:
 
 	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
 	bool bDriftTires;
+
+	UPROPERTY(Category = "Animation", BlueprintReadOnly)
+	UMaterialInstanceDynamic* SpeedLinesDynamic;
+
+	UPROPERTY(Category = "Animation", BlueprintReadOnly)
+	UPostProcessComponent* PostProcess;
 
 	// Overlap event
 	//UFUNCTION()
