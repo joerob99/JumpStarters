@@ -41,6 +41,15 @@ AJumpAnimActor::AJumpAnimActor()
 	static ConstructorHelpers::FObjectFinder<UAnimSequence> JacksAnimRightObject(TEXT("/Game/Vehicle/Anims/Jacks/JacksAnimRight_Anim.JacksAnimRight_Anim"));
 	JacksAnimRight = JacksAnimRightObject.Object;
 
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> JacksMeshBothObject(TEXT("/Game/Vehicle/Anims/Jacks/JacksAnimBoth.JacksAnimBoth"));
+	JacksSkelBoth = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("JacksSkelBoth0"));
+	if (JacksMeshBothObject.Object) {
+		JacksSkelBoth->SetSkeletalMesh(JacksMeshBothObject.Object);
+		JacksSkelBoth->SetupAttachment(GetRootComponent());
+	}
+	static ConstructorHelpers::FObjectFinder<UAnimSequence> JacksAnimBothObject(TEXT("/Game/Vehicle/Anims/Jacks/JacksAnimBoth_Anim.JacksAnimBoth_Anim"));
+	JacksAnimBoth = JacksAnimBothObject.Object;
+
 	RocketParticleSystem = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("/Game/Vehicle/Anims/Rocket/RocketParticles.RocketParticles")).Object;
 	BoostParticleSystem = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("/Game/Vehicle/Anims/Boost/BoostParticles.BoostParticles")).Object;
 	DriftParticleSystem = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("/Game/Vehicle/Anims/Drift/DriftParticles.DriftParticles")).Object;
@@ -53,7 +62,7 @@ void AJumpAnimActor::AnimateJump(TEnumAsByte<ECT::CarType> MyCarType, TEnumAsByt
 	else if (MyCarType == ECT::CarType::RocketBoosters) PlayParticleEffect(false);
 	else if (MyCarType == ECT::CarType::Jacks)
 	{
-		if (MyJumpType == EJT::JumpType::Up) { JacksSkelLeft->PlayAnimation(JacksAnimLeft, false); JacksSkelRight->PlayAnimation(JacksAnimRight, false); }
+		if (MyJumpType == EJT::JumpType::Up) { JacksSkelBoth->PlayAnimation(JacksAnimBoth, false); /*JacksSkelLeft->PlayAnimation(JacksAnimLeft, false); JacksSkelRight->PlayAnimation(JacksAnimRight, false);*/ }
 		else if (MyJumpType == EJT::JumpType::Left) JacksSkelLeft->PlayAnimation(JacksAnimLeft, false);
 		else if (MyJumpType == EJT::JumpType::Right) JacksSkelRight->PlayAnimation(JacksAnimRight, false);
 	}

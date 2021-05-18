@@ -17,8 +17,8 @@ class JUMPSTARTERS_API AJumpAnimActor : public AActor
 
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UAnimSequence* SpringAnim;
-	//UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	//UAnimSequence* JacksAnim;
+	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UAnimSequence* JacksAnimBoth;
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UAnimSequence* JacksAnimLeft;
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -30,6 +30,8 @@ class JUMPSTARTERS_API AJumpAnimActor : public AActor
 	USkeletalMeshComponent* JacksSkelLeft;
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* JacksSkelRight;
+	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* JacksSkelBoth;
 	UPROPERTY(Category = "Animation", VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* RocketSkel;
 
