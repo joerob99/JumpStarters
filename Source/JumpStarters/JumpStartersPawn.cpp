@@ -626,6 +626,7 @@ void AJumpStartersPawn::Tick(float Delta)
 	if (ResetDelay > 0.0f) ResetDelay = ResetDelay - Delta;
 
 	LapTime = LapTime + Delta;
+	TotalRaceTime = TotalRaceTime + Delta;
 
 	InAirTimerCheck = InAirTimerCheck + Delta;
 
@@ -689,6 +690,7 @@ void AJumpStartersPawn::BeginPlay()
 	ResetLocation = new FVector(GetActorLocation());
 
 	Lap = 1;
+	TotalRaceTime = 0.0f;
 
 	DesiredPitch = 0.0f;
 	DesiredRoll = 0.0f;

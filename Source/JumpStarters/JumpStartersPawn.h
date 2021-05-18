@@ -157,6 +157,9 @@ public:
 	UPROPERTY(Category = "RaceSystem", BlueprintReadWrite)
 	float LapTime;
 
+	UPROPERTY(Category = "RaceSystem", BlueprintReadOnly)
+	float TotalRaceTime;
+
 	UPROPERTY(EditAnywhere, Category = "RaceSystem", BlueprintReadWrite)
 	int32 TotalLaps;
 
